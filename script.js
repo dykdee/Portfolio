@@ -709,7 +709,7 @@ function initChatbot() {
             lowerInput.includes('linkedin') || lowerInput.includes('github') || lowerInput.includes('telegram') || 
             lowerInput.includes('whatsapp')) {
             return {
-                text: 'You can reach me through:\n\n• Email: Click the email button below\n• LinkedIn: Professional networking\n• GitHub: Check out my code\n• Telegram: @dee_aanalyst\n• WhatsApp: Direct messaging\n\nI\'d love to hear from you!',
+                text: 'You can reach me through:\n\n• Email: Click the email button below\n• LinkedIn: Professional networking\n• GitHub: Check out my code\n• Telegram: @yourhandle\n• WhatsApp: Direct messaging\n\nI\'d love to hear from you!',
                 action: {
                     type: 'scroll',
                     target: '#contact',
@@ -735,7 +735,7 @@ function initChatbot() {
         if (lowerInput.includes('about') || lowerInput.includes('who') || lowerInput.includes('background') || 
             lowerInput.includes('experience')) {
             return {
-                text: 'I\'m Agoma Divine E., an LLM Engineer & Full Stack Developer. I build intelligent systems with AI, machine learning, and cutting-edge technologies. With 3+ years of experience and 50+ completed projects, I\'m passionate about creating elegant solutions.',
+                text: 'I\'m Your Name, a Full Stack Developer. I build intelligent systems with modern web technologies and thoughtful user experiences.',
                 action: {
                     type: 'scroll',
                     target: '#about',
