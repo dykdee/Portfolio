@@ -148,9 +148,9 @@ window.addEventListener('load', () => {
 // Code typing animation
 const codeLines = [
     '<span class="keyword">const</span> <span class="variable">developer</span> <span class="operator">=</span> {',
-    '  <span class="variable">name</span>: <span class="string">\'Your Name\'</span>,',
-    '  <span class="variable">role</span>: <span class="string">\'Full Stack Developer\'</span>,',
-    '  <span class="variable">skills</span>: [<span class="string">\'JavaScript\'</span>, <span class="string">\'React\'</span>, <span class="string">\'Node.js\'</span>],',
+    '  <span class="variable">name</span>: <span class="string">\'Dee\'</span>,',
+    '  <span class="variable">role</span>: <span class="string">\'Full Stack Developer + LLM Engineer\'</span>,',
+    '  <span class="variable">skills</span>: [<span class="string">\'JavaScript\'</span>, <span class="string">\'React\'</span>, <span class="string">\'Python\'</span>, <span class="string">\'Docker\'</span>, <span class="string">\'Node.js\'</span>],',
     '  <span class="function">build</span>() {',
     '    <span class="keyword">return</span> <span class="string">\'Amazing Products\'</span>;',
     '  }',
@@ -371,7 +371,6 @@ function initProjectsSlider() {
 
     let slidesPerView = getSlidesPerView();
     let index = slidesPerView;
-    let slideSize = 0;
     let autoPlayTimer = null;
     let resumeTimer = null;
     let isTransitioning = false;
@@ -379,95 +378,61 @@ function initProjectsSlider() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function getSlidesPerView() {
-        return window.matchMedia('(min-width: 900px)').matches ? 2 : 1;
-    }
-
-    function getGapSize() {
-        const styles = window.getComputedStyle(track);
-        const gapValue = parseFloat(styles.columnGap || styles.gap || '0');
-        return Number.isNaN(gapValue) ? 0 : gapValue;
+        return window.matchMedia('(min-width: 769px)').matches ? 2 : 1;
     }
 
     function getSlideSize() {
-        const slide = track.querySelector('.project-card');
-        if (!slide) return 0;
-        const width = slide.getBoundingClientRect().width;
-        return width + getGapSize();
-    }
-
-    function removeClones() {
-        track.querySelectorAll('.is-clone').forEach((clone) => clone.remove());
-    }
-
-    function cloneSlides() {
-        const originals = Array.from(track.children).filter((el) => el.classList.contains('project-card') && !el.classList.contains('is-clone'));
-        if (originals.length === 0) return;
-
-        const headClones = originals.slice(0, slidesPerView).map((slide) => {
-            const clone = slide.cloneNode(true);
-            clone.classList.add('is-clone');
-            clone.setAttribute('aria-hidden', 'true');
-            return clone;
-        });
-
-        const tailClones = originals.slice(-slidesPerView).map((slide) => {
-            const clone = slide.cloneNode(true);
-            clone.classList.add('is-clone');
-            clone.setAttribute('aria-hidden', 'true');
-            return clone;
-        });
-
-        const tailFragment = document.createDocumentFragment();
-        tailClones.forEach((clone) => tailFragment.appendChild(clone));
-        track.insertBefore(tailFragment, track.firstChild);
-
-        const headFragment = document.createDocumentFragment();
-        headClones.forEach((clone) => headFragment.appendChild(clone));
-        track.appendChild(headFragment);
-    }
-
-    function setPosition(withTransition = true) {
-        slideSize = getSlideSize();
-        if (!withTransition) {
-            track.style.transition = 'none';
+        const slides = track.querySelectorAll('.project-card');
+        if (!slides.length) return 0;
+        if (slides.length === 1) {
+            return slides[0].getBoundingClientRect().width;
         }
-        track.style.transform = `translateX(${-index * slideSize}px)`;
-
-        if (!withTransition) {
-            requestAnimationFrame(() => {
-                track.style.transition = 'transform 0.6s ease';
-            });
-        }
+        return slides[1].offsetLeft - slides[0].offsetLeft;
     }
 
-    function moveToIndex(targetIndex) {
-        if (isTransitioning) return;
-        isTransitioning = true;
-        index = targetIndex;
-        setPosition(true);
+    function setTransition(enabled) {
+        track.style.transition = enabled ? 'transform 0.6s ease' : 'none';
+    }
+
+    function resetPosition() {
+        setTransition(false);
+        track.style.transform = 'translateX(0px)';
     }
 
     function moveNext() {
-        moveToIndex(index + 1);
+        if (isTransitioning) return;
+        const slideSize = getSlideSize();
+        if (!slideSize) return;
+
+        isTransitioning = true;
+        setTransition(true);
+        track.style.transform = `translateX(${-slideSize}px)`;
+
+        track.addEventListener('transitionend', () => {
+            track.appendChild(track.firstElementChild);
+            resetPosition();
+            isTransitioning = false;
+        }, { once: true });
     }
 
     function movePrev() {
-        moveToIndex(index - 1);
-    }
+        if (isTransitioning) return;
+        const slideSize = getSlideSize();
+        if (!slideSize) return;
 
-    function handleLooping() {
-        const originalsCount = track.querySelectorAll('.project-card:not(.is-clone)').length;
-        if (index >= originalsCount + slidesPerView) {
-            index = slidesPerView;
-            setPosition(false);
-        }
+        isTransitioning = true;
+        setTransition(false);
+        track.insertBefore(track.lastElementChild, track.firstElementChild);
+        track.style.transform = `translateX(${-slideSize}px)`;
 
-        if (index < slidesPerView) {
-            index = originalsCount + slidesPerView - 1;
-            setPosition(false);
-        }
-
-        isTransitioning = false;
+        requestAnimationFrame(() => {
+            setTransition(true);
+            track.style.transform = 'translateX(0px)';
+            track.addEventListener('transitionend', () => {
+                resetPosition();
+                isTransitioning = false;
+            }, { once: true });
+        });
     }
 
     function stopAutoPlay() {
@@ -504,10 +469,7 @@ function initProjectsSlider() {
 
     function setupSlider() {
         slidesPerView = getSlidesPerView();
-        removeClones();
-        cloneSlides();
-        index = slidesPerView;
-        setPosition(false);
+        resetPosition();
     }
 
     prevBtn.addEventListener('click', () => {
@@ -526,8 +488,6 @@ function initProjectsSlider() {
     slider.addEventListener('mouseleave', () => resumeAutoPlay(5000));
     slider.addEventListener('focusin', pauseAutoPlay);
     slider.addEventListener('focusout', () => resumeAutoPlay(5000));
-
-    track.addEventListener('transitionend', handleLooping);
 
     let resizeTimer;
     window.addEventListener('resize', () => {
@@ -709,7 +669,7 @@ function initChatbot() {
             lowerInput.includes('linkedin') || lowerInput.includes('github') || lowerInput.includes('telegram') || 
             lowerInput.includes('whatsapp')) {
             return {
-                text: 'You can reach me through:\n\n• Email: Click the email button below\n• LinkedIn: Professional networking\n• GitHub: Check out my code\n• Telegram: @yourhandle\n• WhatsApp: Direct messaging\n\nI\'d love to hear from you!',
+                text: 'You can reach me through:\n\n• Email: Click the email button below\n• LinkedIn: Professional networking\n• GitHub: Check out my code\n• Telegram: @dee_aanalyst\n• WhatsApp: Direct messaging\n\nI\'d love to hear from you!',
                 action: {
                     type: 'scroll',
                     target: '#contact',
@@ -735,7 +695,7 @@ function initChatbot() {
         if (lowerInput.includes('about') || lowerInput.includes('who') || lowerInput.includes('background') || 
             lowerInput.includes('experience')) {
             return {
-                text: 'I\'m Your Name, a Full Stack Developer. I build intelligent systems with modern web technologies and thoughtful user experiences.',
+                text: 'I\'m Agoma Divine E., an LLM Engineer & Full Stack Developer. I build intelligent systems with AI, machine learning, and cutting-edge technologies. With 3+ years of experience and 50+ completed projects, I\'m passionate about creating elegant solutions.',
                 action: {
                     type: 'scroll',
                     target: '#about',

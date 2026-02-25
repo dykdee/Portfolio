@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin - Dee</title>
+    <link rel="stylesheet" href="styles.css?v=20250206-3">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="media/favicon.svg" type="image/svg+xml">
+</head>
+<body class="admin-page">
+    <!-- Alerts Container -->
+    <div id="alerts"></div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <h3>Delete Post?</h3>
+            <p>This action cannot be undone. Are you sure you want to delete this post?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Section (shown when not logged in) -->
+    <div id="auth-section" class="auth-section">
+        <div class="auth-container">
+            <h1 id="auth-title">Sign In</h1>
+            <p id="auth-subtitle">Access your blog admin dashboard</p>
+            
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="auth-email">Email</label>
+                    <input type="email" id="auth-email" required autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" required autocomplete="current-password" minlength="6">
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="auth-submit" style="width: 100%;">Sign In</button>
+                </div>
+            </form>
+
+            <div class="auth-divider">
+                <span>or</span>
+            </div>
+
+            <div class="auth-social">
+                <button type="button" class="btn btn-github" id="github-signin" aria-label="Sign in with GitHub">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    Sign in with GitHub
+                </button>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Admin Section (shown when logged in) -->
+    <div id="admin-section" class="admin-shell hidden">
+        <header class="admin-navbar" id="admin-navbar">
+            <div class="admin-nav-inner">
+                <div class="admin-nav-brand">
+                    <a href="index.html" class="admin-logo">Dee Admin</a>
+                    <span class="env-badge">Firebase Live</span>
+                </div>
+                <nav class="admin-nav-links" id="admin-nav-links" aria-label="Admin navigation">
+                    <a href="#composer" class="admin-nav-link">Compose</a>
+                    <a href="#preview" class="admin-nav-link">Preview</a>
+                    <a href="#manage-posts" class="admin-nav-link">Manage Posts</a>
+                    <a href="#workflow" class="admin-nav-link">Workflow</a>
+                    <a href="blog.html" class="admin-nav-link">View Blog</a>
+                </nav>
+                <div class="admin-nav-actions">
+                    <div class="user-info" id="user-info">
+                        <div class="user-avatar" id="user-avatar">D</div>
+                        <div class="user-meta">
+                            <span class="user-email" id="user-email"></span>
+                            <span class="user-status">Online</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-signout" onclick="signOut()">Sign Out</button>
+                </div>
+                <button class="admin-nav-toggle" id="admin-nav-toggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </header>
+
+        <div class="admin-toolbar">
+            <a href="#composer" class="toolbar-link">Create</a>
+            <a href="#preview" class="toolbar-link">Preview</a>
+            <a href="#manage-posts" class="toolbar-link">Edit / Delete</a>
+            <a href="#workflow" class="toolbar-link">Workflow</a>
+            <a href="README_ADMIN.md" target="_blank" rel="noopener" class="toolbar-link">Docs</a>
+        </div>
+
+        <!-- Admin Container -->
+        <div class="admin-container">
+            <div class="admin-header">
+                <div>
+                    <h1>Blog Admin Panel</h1>
+                    <p>Compose new stories, edit published work, and manage your Firebase data from one console.</p>
+                </div>
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <span class="stat-label">Live Posts</span>
+                        <span class="stat-value" id="stat-posts-count">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Last Sync</span>
+                        <span class="stat-value" id="stat-last-sync">–</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-grid">
+                <!-- Form Section -->
+                <section class="form-section admin-panel" id="composer">
+                    <div class="section-heading">
+                        <h2 id="form-title">Compose Post</h2>
+                        <p>Create or update blog content. All fields marked with * are required.</p>
+                    </div>
+                    <form id="post-form">
+                        <div class="form-group">
+                            <label for="post-title">Title *</label>
+                            <input type="text" id="post-title" placeholder="Post title" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="post-category">Category *</label>
+                                <select id="post-category" required>
+                                    <option value="">Select category</option>
+                                    <option value="tutorials">Tutorials</option>
+                                    <option value="projects">Projects</option>
+                                    <option value="tips">Tips & Tricks</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="post-date">Date *</label>
+                                <input type="date" id="post-date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="post-excerpt">Excerpt *</label>
+                            <textarea id="post-excerpt" placeholder="Brief summary of your post" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="post-content">Content *</label>
+                            <textarea id="post-content" placeholder="Full post content" required></textarea>
+                        </div>
+
+                        <div class="form-group media-row">
+                            <div class="media-card">
+                                <label for="post-image">Featured Media URL</label>
+                                <input type="url" id="post-image" placeholder="https://example.com/image.jpg">
+                            </div>
+                            <div class="media-card upload-card">
+                                <label class="upload-card-btn" for="post-image-file">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 4v10m0 0-3-3m3 3 3-3m-4 6v4m6-8h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6c0-1.1.9-2 2-2h4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <span>Upload image or short video</span>
+                                    <small>Accepts 15-30s clips or stills</small>
+                                </label>
+                                <input type="file" id="post-image-file" accept="image/*,video/*">
+                                <p class="input-hint">Uploading overrides the URL field.</p>
+                            </div>
+                        </div>
+                        <p class="media-status-text" id="media-upload-status" aria-live="polite"></p>
+
+                        <div class="form-group">
+                            <label>Tags</label>
+                            <div class="tags-input" id="tags-input">
+                                <input type="text" id="tag-input" placeholder="Type tag and press Enter" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="post-publish-at">Publish Time</label>
+                            <p class="input-hint">Leave blank to publish immediately or pick a future date to schedule.</p>
+                            <input type="datetime-local" id="post-publish-at">
+                        </div>
+
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-primary" id="submit-btn">Create Post</button>
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                            <button type="button" class="btn btn-secondary" id="cancel-edit-btn" style="display: none;">Cancel Edit</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Preview Section -->
+                <section class="admin-panel preview-panel" id="preview">
+                    <div class="section-heading">
+                        <h2>Post Preview</h2>
+                        <p>See how your post will appear on the public blog.</p>
+                    </div>
+                    <div class="preview-card">
+                        <div class="preview-image">
+                            <div class="preview-media" id="preview-media">
+                                <img src="https://via.placeholder.com/400x250?text=Blog+Post" alt="Preview media">
+                            </div>
+                        </div>
+                        <div class="preview-body">
+                            <div class="preview-meta" id="preview-meta">Category • Date</div>
+                            <h3 class="preview-title" id="preview-title">Post title</h3>
+                            <p class="preview-excerpt" id="preview-excerpt">Post excerpt will appear here once you start typing.</p>
+                            <div class="preview-tags" id="preview-tags"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <section class="admin-panel manage-posts-panel" id="manage-posts">
+                <div class="section-heading">
+                    <h2>Manage Posts (<span id="posts-count">0</span>)</h2>
+                    <p>Search, filter, and edit posts with live previews of each card.</p>
+                </div>
+                <div class="posts-controls">
+                    <input type="search" id="posts-search" placeholder="Search by title or tag">
+                    <select id="posts-filter">
+                        <option value="all">All Categories</option>
+                        <option value="tutorials">Tutorials</option>
+                        <option value="projects">Projects</option>
+                        <option value="tips">Tips & Tricks</option>
+                    </select>
+                    <select id="posts-status">
+                        <option value="all">All Statuses</option>
+                        <option value="published">Published</option>
+                        <option value="scheduled">Scheduled</option>
+                    </select>
+                </div>
+                <div id="posts-container">
+                    <div class="empty-state">No posts yet. Create your first post!</div>
+                </div>
+            </section>
+
+            <section class="admin-panel workflow-panel" id="workflow">
+                <h2>Workflow Overview</h2>
+                <div class="workflow-steps">
+                    <article class="workflow-step">
+                        <h3>Create</h3>
+                        <p>Fill the composer and hit “Create Post”. Slugs, timestamps, and data validation run automatically.</p>
+                    </article>
+                    <article class="workflow-step">
+                        <h3>Edit</h3>
+                        <p>Select any post and choose “Edit”. The form loads the data so you can update and save.</p>
+                    </article>
+                    <article class="workflow-step">
+                        <h3>Delete</h3>
+                        <p>Use “Delete” to remove a post. A confirmation modal prevents accidental removals.</p>
+                    </article>
+                </div>
+                <div class="docs-links">
+                    <a href="ADMIN_QUICK_START.md" target="_blank" rel="noopener">Quick Start</a>
+                    <a href="FIREBASE_SETUP.md" target="_blank" rel="noopener">Firebase Setup</a>
+                    <a href="ADMIN_IMPROVEMENTS.md" target="_blank" rel="noopener">Release Notes</a>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+    <script src="adminscript.js"></script>
+</body>
+</html>
