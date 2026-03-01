@@ -32,13 +32,18 @@ dee/
 ├── adminscript.js          # Admin panel logic (auth, CRUD, uploads)
 ├── server.js               # Optional Node.js upload proxy
 ├── package.json            # Node dependencies for upload server
+├── package-lock.json       # Locked dependency versions
 ├── serviceAccountKey.json  # Firebase Admin credentials (gitignored)
+├── firebase-config.example.js # Firebase web config template
 ├── cors.json               # Firebase Storage CORS configuration
 ├── media/                  # Images, videos, icons, favicon
-├── README_ADMIN.md         # Admin panel documentation
-├── ADMIN_QUICK_START.md    # Admin quick start guide
-├── FIREBASE_SETUP.md       # Firebase setup guide
-└── DESIGN_SYSTEM.md        # Design system notes
+└── docs/                   # Project documentation
+  ├── README_ADMIN.md
+  ├── ADMIN_IMPROVEMENTS.md
+  ├── ADMIN_QUICK_START.md
+  ├── FIREBASE_SETUP.md
+  ├── FIREBASE_CONFIG_LOCATION.md
+  └── SYSTEM_CSS_DESIGN.md
 ```
 
 ## ✨ Features
@@ -365,10 +370,12 @@ firebase deploy --only hosting
 
 | File | Purpose |
 |------|---------|
-| [README_ADMIN.md](README_ADMIN.md) | Admin panel architecture and workflows |
-| [ADMIN_QUICK_START.md](ADMIN_QUICK_START.md) | 5-minute setup checklist |
-| [FIREBASE_SETUP.md](FIREBASE_SETUP.md) | Detailed Firebase configuration |
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | UI components and visual guidelines |
+| [docs/README_ADMIN.md](docs/README_ADMIN.md) | Admin panel architecture and workflows |
+| [docs/ADMIN_IMPROVEMENTS.md](docs/ADMIN_IMPROVEMENTS.md) | Admin enhancement notes and updates |
+| [docs/ADMIN_QUICK_START.md](docs/ADMIN_QUICK_START.md) | 5-minute setup checklist |
+| [docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md) | Detailed Firebase configuration |
+| [docs/FIREBASE_CONFIG_LOCATION.md](docs/FIREBASE_CONFIG_LOCATION.md) | Where to place Firebase credentials and config |
+| [docs/SYSTEM_CSS_DESIGN.md](docs/SYSTEM_CSS_DESIGN.md) | UI components and visual guidelines |
 
 ## 🤝 Contributing
 
