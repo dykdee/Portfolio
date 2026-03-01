@@ -35,11 +35,10 @@ dee/
 ├── serviceAccountKey.json  # Firebase Admin credentials (gitignored)
 ├── cors.json               # Firebase Storage CORS configuration
 ├── media/                  # Images, videos, icons, favicon
-└── docs/                   # Documentation files
-    ├── README_ADMIN.md
-    ├── ADMIN_QUICK_START.md
-    ├── FIREBASE_SETUP.md
-    └── DESIGN_SYSTEM.md
+├── README_ADMIN.md         # Admin panel documentation
+├── ADMIN_QUICK_START.md    # Admin quick start guide
+├── FIREBASE_SETUP.md       # Firebase setup guide
+└── DESIGN_SYSTEM.md        # Design system notes
 ```
 
 ## ✨ Features

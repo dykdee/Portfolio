@@ -1,17 +1,10 @@
 'use strict';
 
-// Firebase configuration for the admin panel (replace values with your own project credentials when needed)
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBjAWzaa-mWOf0KG0Q_a7WlkhkMM1M9-c4",
-  authDomain: "dee-s-site.firebaseapp.com",
-  databaseURL: "https://dee-s-site-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "dee-s-site",
-  storageBucket: "dee-s-site.firebasestorage.app",
-  messagingSenderId: "322567193237",
-  appId: "1:322567193237:web:d66050eb7d3b654a33119c",
-  measurementId: "G-2M71BGKLND"
-};
+// Firebase configuration for the admin panel is loaded from firebase-config.js
+const firebaseConfig = window.FIREBASE_CONFIG;
+if (!firebaseConfig) {
+        throw new Error('Missing Firebase config. Copy firebase-config.example.js to firebase-config.js and fill in your credentials.');
+}
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();

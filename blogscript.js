@@ -1,15 +1,9 @@
 'use strict';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBjAWzaa-mWOf0KG0Q_a7WlkhkMM1M9-c4",
-    authDomain: "dee-s-site.firebaseapp.com",
-    databaseURL: "https://dee-s-site-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "dee-s-site",
-    storageBucket: "dee-s-site.firebasestorage.app",
-    messagingSenderId: "322567193237",
-    appId: "1:322567193237:web:d66050eb7d3b654a33119c",
-    measurementId: "G-2M71BGKLND"
-};
+const firebaseConfig = window.FIREBASE_CONFIG;
+if (!firebaseConfig) {
+    throw new Error('Missing Firebase config. Copy firebase-config.example.js to firebase-config.js and fill in your credentials.');
+}
 
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
