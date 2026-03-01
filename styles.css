@@ -2746,6 +2746,7 @@ body.admin-page {
 }
 
 /* Blog Header (kept for backward compatibility with old blog structure) */
+.blog-header {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
     color: white;
     padding: 80px 0 60px;
