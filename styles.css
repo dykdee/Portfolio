@@ -1537,7 +1537,7 @@ body.admin-page {
     height: 1em;
     background: #d4d4d4;
     animation: blink 1s infinite;
-    margin-left: 1px;
+    vertical-align: text-bottom;
 }
 
 @keyframes blink {
