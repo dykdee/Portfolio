@@ -4,24 +4,48 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "media/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
       "src": "/firebase-config.js",
-      "dest": "server.js"
+      "dest": "/server.js"
     },
     {
       "src": "/upload",
-      "dest": "server.js"
+      "dest": "/server.js"
     },
     {
       "src": "/health",
-      "dest": "server.js"
+      "dest": "/server.js"
     },
     {
-      "src": "/(.*)",
+      "src": "/(.*\\.(html|css|js|svg|png|jpg|jpeg|gif|ico|json))",
       "dest": "/$1"
+    },
+    {
+      "src": "/media/(.*)",
+      "dest": "/media/$1"
     }
   ]
 }
