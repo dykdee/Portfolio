@@ -1534,10 +1534,10 @@ body.admin-page {
 .code-cursor {
     display: inline-block;
     width: 2px;
-    height: 1.2em;
+    height: 1em;
     background: #d4d4d4;
     animation: blink 1s infinite;
-    vertical-align: middle;
+    margin-left: 1px;
 }
 
 @keyframes blink {

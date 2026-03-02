@@ -217,9 +217,8 @@ function startTyping() {
         const targetText = codeLines[currentLine];
         const displayText = targetText.substring(0, currentChar);
 
-        if (displayText) {
-            currentLineElement.innerHTML = displayText;
-        }
+        // Update current line with text and cursor
+        currentLineElement.innerHTML = displayText + '<span class="code-cursor"></span>';
 
         if (currentChar < targetText.length) {
             currentChar++;
