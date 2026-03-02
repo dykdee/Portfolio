@@ -90,102 +90,12 @@ if (authForm) {
         }
     });
 }
-
-const githubSignInBtn = document.getElementById('github-signin');
-
-function setGithubButtonLoading(isLoading) {
-    if (!githubSignInBtn) return;
-    githubSignInBtn.classList.toggle('loading', isLoading);
-    githubSignInBtn.disabled = isLoading;
-}
-
-function getGithubAuthErrorMessage(error) {
-    switch (error?.code) {
-        case 'auth/unauthorized-domain':
-            return 'This domain is not authorized in Firebase Auth. Add your current host to Firebase Console → Authentication → Settings → Authorized domains.';
-        case 'auth/operation-not-allowed':
-            return 'GitHub sign-in is not enabled. Enable GitHub provider in Firebase Console → Authentication → Sign-in method.';
-        case 'auth/account-exists-with-different-credential':
-            return `An account already exists with this email (${error.email || 'unknown email'}). Sign in with email/password first, then link GitHub from your account settings.`;
-        case 'auth/popup-blocked':
-            return 'The browser blocked the sign-in popup. Allow popups for this site or try again.';
-        case 'auth/network-request-failed':
-            return 'Network error during sign-in. Check internet connection and try again.';
-        default:
-            return error?.message || 'GitHub sign-in failed. Please try again.';
-    }
-}
-
-function createGithubProvider() {
-    const provider = new firebase.auth.GithubAuthProvider();
-    provider.addScope('read:user');
-    provider.addScope('user:email');
-    return provider;
-}
-
-async function signInWithGithub() {
-    const provider = createGithubProvider();
-    setGithubButtonLoading(true);
-
-    try {
-        await auth.signInWithPopup(provider);
-        return;
-    } catch (popupError) {
-        const shouldFallbackToRedirect = popupError?.code === 'auth/popup-blocked' ||
-            popupError?.code === 'auth/operation-not-supported-in-this-environment';
-        const userCancelled = popupError?.code === 'auth/popup-closed-by-user' ||
-            popupError?.code === 'auth/cancelled-popup-request';
-
-        if (userCancelled) {
-            showAlert('GitHub sign-in canceled.', 'error');
-            setGithubButtonLoading(false);
-            return;
-        }
-
-        if (!shouldFallbackToRedirect) {
-            showAlert(getGithubAuthErrorMessage(popupError), 'error');
-            setGithubButtonLoading(false);
-            return;
-        }
-    }
-
-    try {
-        await auth.signInWithRedirect(provider);
-    } catch (redirectError) {
-        showAlert(getGithubAuthErrorMessage(redirectError), 'error');
-        setGithubButtonLoading(false);
-    }
-}
-
-if (githubSignInBtn) {
-    githubSignInBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await signInWithGithub();
-    });
-}
-
-// Handle OAuth redirect FIRST (before auth state listener)
-auth.getRedirectResult()
-    .then((result) => {
-        if (result.user) {
-            console.log('✓ GitHub sign-in successful via redirect:', result.user.email);
-            showAlert(`Welcome back, ${result.user.email}!`);
-        }
-    })
-    .catch((error) => {
-        if (error?.code && error.code !== 'auth/no-redirect-result') {
-            console.error('GitHub auth error:', error.code, error.message);
-            showAlert(getGithubAuthErrorMessage(error), 'error');
-        }
-    });
-
-// Set up auth state listener (after redirect result check)
+// Set up auth state listener
 auth.onAuthStateChanged((user) => {
     currentUser = user;
     console.log('Auth state changed:', user ? `Logged in as ${user.email}` : 'Logged out');
 
     if (user) {
-        setGithubButtonLoading(false);
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('admin-section').classList.remove('hidden');
         
@@ -200,7 +110,6 @@ auth.onAuthStateChanged((user) => {
         setInterval(ensureScheduledPostsPublished, 60000);
         console.log('Admin section displayed for:', user.email);
     } else {
-        setGithubButtonLoading(false);
         document.getElementById('auth-section').classList.remove('hidden');
         document.getElementById('admin-section').classList.add('hidden');
         window.scrollTo(0, 0);
