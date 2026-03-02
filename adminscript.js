@@ -164,7 +164,22 @@ if (githubSignInBtn) {
     });
 }
 
-// Set up auth state listener FIRST - before handling redirect results
+// Handle OAuth redirect FIRST (before auth state listener)
+auth.getRedirectResult()
+    .then((result) => {
+        if (result.user) {
+            console.log('✓ GitHub sign-in successful via redirect:', result.user.email);
+            showAlert(`Welcome back, ${result.user.email}!`);
+        }
+    })
+    .catch((error) => {
+        if (error?.code && error.code !== 'auth/no-redirect-result') {
+            console.error('GitHub auth error:', error.code, error.message);
+            showAlert(getGithubAuthErrorMessage(error), 'error');
+        }
+    });
+
+// Set up auth state listener (after redirect result check)
 auth.onAuthStateChanged((user) => {
     currentUser = user;
     console.log('Auth state changed:', user ? `Logged in as ${user.email}` : 'Logged out');
@@ -191,23 +206,6 @@ auth.onAuthStateChanged((user) => {
         window.scrollTo(0, 0);
     }
 });
-
-auth.getRedirectResult()
-    .then((result) => {
-        if (result.user) {
-            console.log('✓ GitHub sign-in successful:', result.user.email);
-            showAlert(`Welcome back, ${result.user.email}!`);
-        }
-    })
-    .catch((error) => {
-        if (error?.code) {
-            console.error('GitHub auth error:', error.code, error.message);
-        }
-        showAlert(getGithubAuthErrorMessage(error), 'error');
-    })
-    .finally(() => {
-        setGithubButtonLoading(false);
-    });
 
 // Set up image file input listener
 if (imageFileInput) {
