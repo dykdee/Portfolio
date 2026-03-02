@@ -149,7 +149,7 @@ window.addEventListener('load', () => {
 const codeLines = [
     '<span class="keyword">const</span> <span class="variable">developer</span> <span class="operator">=</span> {',
     '  <span class="variable">name</span>: <span class="string">\'Dee\'</span>,',
-    '  <span class="variable">role</span>: <span class="string">\'Full Stack Developer + LLM Engineer\'</span>,',
+    '  <span class="variable">role</span>: <span class="string">\'AI Product & Systems Engineer\'</span>,',
     '  <span class="variable">skills</span>: [<span class="string">\'JavaScript\'</span>, <span class="string">\'React\'</span>, <span class="string">\'Python\'</span>, <span class="string">\'Docker\'</span>, <span class="string">\'Node.js\'</span>],',
     '  <span class="function">build</span>() {',
     '    <span class="keyword">return</span> <span class="string">\'Amazing Products\'</span>;',
@@ -224,7 +224,8 @@ function startTyping() {
             currentChar++;
             setTimeout(type, 30 + Math.random() * 40); // Vary typing speed
         } else {
-            // Move to next line
+            // Line complete - remove cursor before moving to next line
+            currentLineElement.innerHTML = displayText;
             currentLine++;
             currentChar = 0;
             setTimeout(type, 200); // Pause between lines
