@@ -22,25 +22,40 @@ const firebaseWebConfig = {
 };
 
 // Initialize Firebase Admin SDK
-const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
-
-console.log('Looking for service account at:', serviceAccountPath);
-console.log('File exists:', fs.existsSync(serviceAccountPath));
+let bucket;
 
 try {
-  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket
-  });
-  console.log('Firebase Admin SDK initialized successfully');
+  let serviceAccount;
+  
+  // Try environment variable first (for Vercel/cloud deployment)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.log('Loading service account from environment variable');
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    // Fall back to local file (for local development)
+    const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
+    console.log('Loading service account from file:', serviceAccountPath);
+    
+    if (!fs.existsSync(serviceAccountPath)) {
+      console.warn('⚠️  Warning: Firebase Admin SDK not initialized (no service account found)');
+      console.warn('Upload functionality will not work. Add FIREBASE_SERVICE_ACCOUNT env var or serviceAccountKey.json file.');
+    } else {
+      serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    }
+  }
+  
+  if (serviceAccount) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      storageBucket
+    });
+    bucket = admin.storage().bucket();
+    console.log('✅ Firebase Admin SDK initialized successfully');
+  }
 } catch (error) {
-  console.error('Failed to initialize Firebase Admin SDK:', error.message);
-  console.log('Make sure serviceAccountKey.json exists in the project root.');
-  process.exit(1);
+  console.error('❌ Failed to initialize Firebase Admin SDK:', error.message);
+  console.warn('Upload functionality will not work.');
 }
-
-const bucket = admin.storage().bucket();
 
 app.use(cors());
 app.use(express.json());
@@ -69,6 +84,13 @@ app.get('/health', (req, res) => {
 // Upload endpoint
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
+    if (!bucket) {
+      console.log('ERROR: Firebase Admin SDK not initialized');
+      return res.status(503).json({ 
+        error: 'Upload service not available. Firebase Admin SDK not initialized.' 
+      });
+    }
+
     console.log('Upload request received');
     console.log('File:', req.file ? `${req.file.originalname} (${req.file.size} bytes)` : 'MISSING');
     console.log('User ID:', req.headers['x-user-id']);
