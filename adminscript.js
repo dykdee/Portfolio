@@ -1,9 +1,9 @@
 'use strict';
 
-// Firebase configuration for the admin panel is loaded from firebase-config.js
+// Firebase configuration for the admin panel is loaded from /firebase-config.js
 const firebaseConfig = window.FIREBASE_CONFIG;
 if (!firebaseConfig) {
-        throw new Error('Missing Firebase config. Copy firebase-config.example.js to firebase-config.js and fill in your credentials.');
+    throw new Error('Missing Firebase config. Add Firebase values to .env and run the Node server to serve /firebase-config.js.');
 }
 
 firebase.initializeApp(firebaseConfig);

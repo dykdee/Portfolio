@@ -33,8 +33,8 @@ dee/
 ├── server.js               # Optional Node.js upload proxy
 ├── package.json            # Node dependencies for upload server
 ├── package-lock.json       # Locked dependency versions
+├── .env.example            # Environment variable template
 ├── serviceAccountKey.json  # Firebase Admin credentials (gitignored)
-├── firebase-config.example.js # Firebase web config template
 ├── cors.json               # Firebase Storage CORS configuration
 ├── media/                  # Images, videos, icons, favicon
 └── docs/                   # Project documentation
@@ -101,10 +101,9 @@ npm install  # Only needed if using upload server
 #### Get Firebase Config
 1. Go to **Project Settings** → **General**
 2. Scroll to **Your apps** → Click web icon (</>) to add a web app
-3. Copy the `firebaseConfig` object
-4. Paste it into:
-   - `adminscript.js` (line 5-13)
-   - `blogscript.js` (line 3-12)
+3. Copy the `firebaseConfig` values
+4. Create `.env` from `.env.example` and fill the matching `FIREBASE_*` variables
+5. Start the Node server (`npm start`) so it serves `/firebase-config.js` to the frontend
 
 #### Set Database Rules
 1. Go to **Realtime Database** → **Rules**
@@ -159,19 +158,13 @@ To enable GitHub sign-in for the admin panel:
 ### 5. Run Local Development Server
 
 ```bash
-# Start static file server
-python3 -m http.server 8000
-
-# Or use Node.js
-npx http-server -p 8000
-
-# If using Firebase Storage uploads, also run:
-npm start  # Starts upload proxy on port 4001
+# Start app server (serves pages, upload API, and /firebase-config.js)
+npm start
 ```
 
 ### 6. First Login
 
-1. Open http://localhost:8000/admin.html
+1. Open http://localhost:4001/admin.html
 2. Create an account with email/password
 3. Start creating blog posts!
 

@@ -45,7 +45,7 @@ Security rules limit read/write access to the authenticated user’s `uid` and e
 ## Setup Snapshot
 
 1. Follow [FIREBASE_SETUP.md](FIREBASE_SETUP.md) to create the Firebase project and database rules.
-2. Paste the config into `adminscript.js` as explained in [FIREBASE_CONFIG_LOCATION.md](FIREBASE_CONFIG_LOCATION.md).
+2. Add Firebase web config values to `.env` as explained in [FIREBASE_CONFIG_LOCATION.md](FIREBASE_CONFIG_LOCATION.md).
 3. Serve the site locally and run through the [ADMIN_QUICK_START.md](ADMIN_QUICK_START.md) checklist.
 
 ## Operational Workflow
@@ -58,7 +58,7 @@ Security rules limit read/write access to the authenticated user’s `uid` and e
 
 ## Maintenance Checklist
 
-- Rotate Firebase credentials when needed by updating `adminscript.js`.
+- Rotate Firebase credentials when needed by updating `.env`.
 - Review database security rules before moving out of Test mode.
 - Periodically export the Realtime Database from the Firebase Console for backups.
 - Monitor Authentication ▸ Users to prune stale accounts if desired.

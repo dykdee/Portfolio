@@ -2,7 +2,7 @@
 
 const firebaseConfig = window.FIREBASE_CONFIG;
 if (!firebaseConfig) {
-    throw new Error('Missing Firebase config. Copy firebase-config.example.js to firebase-config.js and fill in your credentials.');
+    throw new Error('Missing Firebase config. Add Firebase values to .env and run the Node server to serve /firebase-config.js.');
 }
 
 if (!firebase.apps.length) {

@@ -4,9 +4,22 @@ const multer = require('multer');
 const admin = require('firebase-admin');
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config();
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
+const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || 'dee-s-site.firebasestorage.app';
+
+const firebaseWebConfig = {
+  apiKey: process.env.FIREBASE_API_KEY || '',
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
+  databaseURL: process.env.FIREBASE_DATABASE_URL || '',
+  projectId: process.env.FIREBASE_PROJECT_ID || '',
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: process.env.FIREBASE_APP_ID || '',
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID || ''
+};
 
 // Initialize Firebase Admin SDK
 const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
@@ -18,7 +31,7 @@ try {
   const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    storageBucket: 'dee-s-site.firebasestorage.app'
+    storageBucket
   });
   console.log('Firebase Admin SDK initialized successfully');
 } catch (error) {
@@ -31,6 +44,22 @@ const bucket = admin.storage().bucket();
 
 app.use(cors());
 app.use(express.json());
+
+app.get('/firebase-config.js', (req, res) => {
+  const missingKeys = Object.entries(firebaseWebConfig)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  const warning = missingKeys.length
+    ? `console.warn('Missing Firebase web config keys in .env: ${missingKeys.join(', ')}');`
+    : '';
+
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(`${warning}\nwindow.FIREBASE_CONFIG = ${JSON.stringify(firebaseWebConfig)};`);
+});
+
+app.use(express.static(__dirname));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -73,7 +102,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     console.log(`Upload complete: ${filePath}`);
 
-    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/dee-s-site.firebasestorage.app/o/${encodeURIComponent(filePath)}?alt=media`;
+    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/${encodeURIComponent(filePath)}?alt=media`;
 
     res.json({
       success: true,

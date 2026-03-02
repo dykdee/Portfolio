@@ -6,9 +6,9 @@ Need the shortest path from zero to a working dashboard? Follow the steps below 
 
 1. **Create** a Firebase project and web app (Console ▸ Add project ▸ Web `</>` app).
 2. **Enable** Email/Password auth plus a Realtime Database in Test mode.
-3. **Paste** the config into `adminscript.js` (see [FIREBASE_CONFIG_LOCATION.md](FIREBASE_CONFIG_LOCATION.md)).
-4. **Serve** the site locally: `python3 -m http.server 8000`.
-5. **Visit** `http://localhost:8000/admin.html`, sign up, and publish a post.
+3. **Add** the Firebase values to `.env` (see [FIREBASE_CONFIG_LOCATION.md](FIREBASE_CONFIG_LOCATION.md)).
+4. **Run** the app server locally: `npm start`.
+5. **Visit** `http://localhost:4001/admin.html`, sign up, and publish a post.
 
 ## Step-by-step
 
@@ -21,16 +21,17 @@ Need the shortest path from zero to a working dashboard? Follow the steps below 
 - Build ▸ Realtime Database ▸ Create Database → choose region → start in Test mode → paste the rules from [FIREBASE_SETUP.md](FIREBASE_SETUP.md).
 
 ### 3. Wire the Config
-- Open `adminscript.js` and replace every field in `firebaseConfig` with the values from the console.
-- Save the file—`admin.html` now loads Firebase through that script tag.
+- Copy `.env.example` to `.env`.
+- Fill all `FIREBASE_*` values from Firebase Project settings.
+- `server.js` now serves those values to the frontend through `/firebase-config.js`.
 
 ### 4. Run Locally
 ```bash
 cd /home/dee/Projects/dee
-python3 -m http.server 8000
+npm start
 ```
 
-Visit `http://localhost:8000/admin.html`, create an account, and start adding posts. The UI will confirm each action with the alert banner.
+Visit `http://localhost:4001/admin.html`, create an account, and start adding posts. The UI will confirm each action with the alert banner.
 
 ## Post-setup Checklist
 
