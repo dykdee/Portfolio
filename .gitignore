@@ -4,4 +4,5 @@ firebase-config.js
 .env
 .env.*
 !.env.example
+.firebase/
 
