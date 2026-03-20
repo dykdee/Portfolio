@@ -2,27 +2,30 @@
   "version": 2,
   "builds": [
     {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.css",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "media/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/chatbot/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/admin/secrets/(.*)",
+      "dest": "/server.js"
+    },
     {
       "src": "/firebase-config.js",
       "dest": "/server.js"
@@ -36,20 +39,7 @@
       "dest": "/server.js"
     },
     {
-      "src": "/(.*\\.(html|css|js|svg|png|jpg|jpeg|gif|ico|json))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/media/(.*)",
-      "dest": "/media/$1"
-    },
-    {
-      "src": "/(home|blog|admin)",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",

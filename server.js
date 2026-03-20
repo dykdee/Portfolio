@@ -861,7 +861,11 @@ app.get('/firebase-config.js', (req, res) => {
   res.send(`${warning}\nwindow.FIREBASE_CONFIG = ${JSON.stringify(firebaseWebConfig)};`);
 });
 
-app.use(express.static(__dirname));
+const staticRootPath = fs.existsSync(path.join(__dirname, 'dist'))
+  ? path.join(__dirname, 'dist')
+  : __dirname;
+
+app.use(express.static(staticRootPath));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -1124,14 +1128,18 @@ app.get('*', (req, res, next) => {
     return next();
   }
 
-  return res.sendFile(path.join(__dirname, 'index.html'));
+  return res.sendFile(path.join(staticRootPath, 'index.html'));
 });
 
 const PORT = process.env.PORT || 4001;
-app.listen(PORT, () => {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    console.warn('⚠️  BLOB_READ_WRITE_TOKEN is not set — uploads will not work.');
-  }
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.warn('⚠️  BLOB_READ_WRITE_TOKEN is not set — uploads will not work.');
+    }
 
-  console.log(`Upload server running on http://localhost:${PORT}`);
-});
+    console.log(`Upload server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
