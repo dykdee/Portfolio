@@ -1,49 +1,45 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+  "$schema": "./.vscode/schemas/vercel.schema.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs22.x",
+      "includeFiles": "chatbot/**"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
+      "source": "/chatbot/(.*)",
+      "destination": "/api/chatbot/$1"
     },
     {
-      "src": "/chatbot/(.*)",
-      "dest": "/server.js"
+      "source": "/admin/secrets/(.*)",
+      "destination": "/api/admin/secrets/$1"
     },
     {
-      "src": "/admin/secrets/(.*)",
-      "dest": "/server.js"
+      "source": "/firebase-config.js",
+      "destination": "/api/firebase-config.js"
     },
     {
-      "src": "/firebase-config.js",
-      "dest": "/server.js"
+      "source": "/upload",
+      "destination": "/api/upload"
     },
     {
-      "src": "/upload",
-      "dest": "/server.js"
+      "source": "/health",
+      "destination": "/api/health"
     },
     {
-      "src": "/health",
-      "dest": "/server.js"
+      "source": "/home",
+      "destination": "/index.html"
     },
     {
-      "handle": "filesystem"
+      "source": "/blog",
+      "destination": "/index.html"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/admin",
+      "destination": "/index.html"
     }
   ]
 }
