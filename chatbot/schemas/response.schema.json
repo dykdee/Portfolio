@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatbot/response.schema.json",
+  "title": "Chatbot Assistant Message",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "role", "summary", "sections", "citations", "suggestedActions", "meta"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "const": "assistant"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "content"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "$ref": "./citation.schema.json"
+      }
+    },
+    "suggestedActions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "label"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["scroll", "link", "summarize"]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "href": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subjectId": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "usedMemory", "usedRetrieval", "stageTrace"],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "usedMemory": {
+          "type": "boolean"
+        },
+        "usedRetrieval": {
+          "type": "boolean"
+        },
+        "stageTrace": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["thinking", "searching", "summarizing", "drafting"]
+          }
+        }
+      }
+    }
+  }
+}
