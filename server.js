@@ -324,11 +324,11 @@ ${message}`;
 function createFallbackResponse({ message, retrieval, intent, audience }) {
   if (intent === 'greeting') {
     return {
-      summary: 'Hey, great to meet you. I can help with Dee\'s skills, projects, role fit, contact, or a quick portfolio summary.',
+      summary: 'Hey, happy to help. Ask me anything about Dee\u2019s work, skills, or background.',
       sections: [
         {
           label: 'How I Can Help',
-          content: 'Ask about skills, project highlights, recruiter fit, client fit, contact options, or ask me to summarize the portfolio.'
+          content: 'Ask about skills, projects, role fit, contact, or request a portfolio summary. Please allow a few minutes between requests so responses stay accurate.'
         }
       ],
       citationIds: [],

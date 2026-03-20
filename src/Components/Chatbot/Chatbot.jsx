@@ -270,6 +270,9 @@ export default function Chatbot() {
         </div>
 
         <div className="chatbot-messages">
+          <div className="chatbot-session-note">
+            Please allow ~3 minutes between requests for best results.
+          </div>
           {messages.map((msg) => (
             <div key={msg.id} className={`chatbot-msg chatbot-msg--${msg.role}${msg.isError ? ' chatbot-msg--error' : ''}`}>
               {msg.role === 'user' ? (
