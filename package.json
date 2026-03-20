@@ -3,6 +3,9 @@
   "name": "dee-blog-admin",
   "version": "1.0.0",
   "description": "Blog admin panel with backend upload proxy",
+  "engines": {
+    "node": "22.x"
+  },
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
