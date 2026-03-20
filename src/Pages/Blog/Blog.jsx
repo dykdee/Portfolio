@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useBlogPosts } from '../../hooks/useBlogPosts';
-import { formatDate } from '../../utils/blogUtils';
+import { createMediaPlaceholderUrl, formatDate } from '../../utils/blogUtils';
 import '../../../styles.css';
 
 function determineMediaTypeFromUrl(url) {
@@ -53,7 +53,11 @@ export default function Blog() {
   }, []);
 
   const renderMedia = (post) => {
-    const placeholder = `https://via.placeholder.com/400x250?text=${encodeURIComponent(post.title || 'Blog+Post')}`;
+    const placeholder = createMediaPlaceholderUrl({
+      label: post.title || 'Blog Post',
+      width: 400,
+      height: 250
+    });
     const url = post.mediaUrl || post.image || placeholder;
     const mediaType = post.mediaType || determineMediaTypeFromUrl(url);
     if (mediaType === 'video') {

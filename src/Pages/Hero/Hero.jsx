@@ -10,91 +10,164 @@ export default function Hero() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx  = canvas.getContext('2d');
-    let time   = 0;
-    let animId = null;
+    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    if (!ctx) return;
 
-    function resizeCanvas() {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const lowPowerDevice = Boolean(
+      motionQuery.matches
+      || navigator.connection?.saveData
+      || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+    );
+
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
+    let animationFrameId = 0;
+    let particles = [];
+    let lastFrameAt = 0;
+    let animationStartAt = performance.now();
+    let isTabVisible = !document.hidden;
 
     const config = {
-      particleCount: 400,
-      particleMinSize: 0.5,
-      particleMaxSize: 2,
-      breathingCycleDuration: 30000,
+      particleMinSize: 0.6,
+      particleMaxSize: 1.8,
+      breathingCycleDurationMs: 30000,
+      targetFrameDurationMs: lowPowerDevice ? 1000 / 24 : 1000 / 30,
+      maxParticleCount: lowPowerDevice ? 70 : 140,
+      minParticleCount: lowPowerDevice ? 28 : 48,
     };
+
+    function resizeCanvas() {
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+
+      const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(viewportWidth * devicePixelRatio);
+      canvas.height = Math.round(viewportHeight * devicePixelRatio);
+      canvas.style.width = `${viewportWidth}px`;
+      canvas.style.height = `${viewportHeight}px`;
+
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      particles = createParticles();
+    }
+
+    function getParticleCount() {
+      const particleCountFromArea = Math.round((viewportWidth * viewportHeight) / 18000);
+      return Math.max(config.minParticleCount, Math.min(config.maxParticleCount, particleCountFromArea));
+    }
 
     class Particle {
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * viewportWidth;
+        this.y = Math.random() * viewportHeight;
         this.depth = Math.random();
-        this.size  = config.particleMinSize + this.depth * (config.particleMaxSize - config.particleMinSize);
-        this.vx = (Math.random() - 0.5) * 0.04;
-        this.vy = (Math.random() - 0.5) * 0.04;
-        this.driftPhase  = Math.random() * Math.PI * 2;
-        this.driftSpeed  = 0.001 + Math.random() * 0.001;
+        this.size = config.particleMinSize + this.depth * (config.particleMaxSize - config.particleMinSize);
+        this.vx = (Math.random() - 0.5) * 0.028;
+        this.vy = (Math.random() - 0.5) * 0.028;
+        this.driftPhase = Math.random() * Math.PI * 2;
+        this.driftSpeed = 0.0007 + Math.random() * 0.0007;
         this.baseBrightness = 0.3 + this.depth * 0.5;
         this.currentBrightness = this.baseBrightness;
       }
 
-      update(breathingIntensity, globalTime) {
-        this.driftPhase += this.driftSpeed;
-        this.x += this.vx + Math.sin(this.driftPhase) * 0.03;
-        this.y += this.vy + Math.cos(this.driftPhase * 0.7) * 0.03;
-        const twinkle = Math.sin(globalTime * 0.003 + this.driftPhase) * 0.3;
+      update(deltaMs, breathingIntensity, globalTime) {
+        const step = deltaMs / 16.67;
+        this.driftPhase += this.driftSpeed * deltaMs;
+        this.x += (this.vx + Math.sin(this.driftPhase) * 0.02) * step;
+        this.y += (this.vy + Math.cos(this.driftPhase * 0.7) * 0.02) * step;
+        const twinkle = Math.sin(globalTime * 0.0025 + this.driftPhase) * 0.22;
         this.currentBrightness = (this.baseBrightness + twinkle) * (0.7 + breathingIntensity * 0.3);
-        if (this.x < -20)               this.x = canvas.width + 20;
-        if (this.x > canvas.width + 20) this.x = -20;
-        if (this.y < -20)                this.y = canvas.height + 20;
-        if (this.y > canvas.height + 20) this.y = -20;
+
+        if (this.x < -20) this.x = viewportWidth + 20;
+        if (this.x > viewportWidth + 20) this.x = -20;
+        if (this.y < -20) this.y = viewportHeight + 20;
+        if (this.y > viewportHeight + 20) this.y = -20;
       }
 
       draw(ctx) {
-        ctx.save();
-        const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 5);
-        glow.addColorStop(0, `rgba(96, 165, 250, ${this.currentBrightness * 0.4})`);
-        glow.addColorStop(1, 'rgba(96, 165, 250, 0)');
-        ctx.fillStyle = glow;
+        ctx.fillStyle = '#60a5fa';
+        ctx.globalAlpha = this.currentBrightness * 0.16;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * 5, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.size * 4.2, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = `rgba(200, 230, 255, ${Math.min(this.currentBrightness, 1)})`;
+
+        ctx.fillStyle = '#dbeafe';
+        ctx.globalAlpha = Math.min(this.currentBrightness, 1);
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
       }
     }
 
-    const particles = Array.from({ length: config.particleCount }, () => new Particle());
-
-    function animate() {
-      time++;
-      const breathingIntensity = Math.sin(time / config.breathingCycleDuration * Math.PI * 2) * 0.5 + 0.5;
-      ctx.fillStyle = '#0a1423';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p) => { p.update(breathingIntensity, time); p.draw(ctx); });
-      animId = requestAnimationFrame(animate);
+    function createParticles() {
+      return Array.from({ length: getParticleCount() }, () => new Particle());
     }
-    animate();
+
+    function drawFrame(now) {
+      const elapsed = now - animationStartAt;
+      const breathingIntensity = Math.sin((elapsed / config.breathingCycleDurationMs) * Math.PI * 2) * 0.5 + 0.5;
+      ctx.fillStyle = '#0a1423';
+      ctx.fillRect(0, 0, viewportWidth, viewportHeight);
+
+      const deltaMs = lastFrameAt ? now - lastFrameAt : config.targetFrameDurationMs;
+      particles.forEach((particle) => {
+        particle.update(deltaMs, breathingIntensity, elapsed);
+        particle.draw(ctx);
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    function animate(now) {
+      if (motionQuery.matches) {
+        drawFrame(now);
+        return;
+      }
+
+      if (isTabVisible && (!lastFrameAt || now - lastFrameAt >= config.targetFrameDurationMs)) {
+        drawFrame(now);
+        lastFrameAt = now;
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    function handleVisibilityChange() {
+      isTabVisible = !document.hidden;
+      if (isTabVisible) {
+        lastFrameAt = 0;
+      }
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    drawFrame(animationStartAt);
+
+    if (!motionQuery.matches) {
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
     // Video crossfade
     const video = videoRef.current;
+    let onLoaded;
+    let onError;
     if (video) {
-      const onLoaded = () => { video.classList.add('loaded'); canvas.style.opacity = '0.5'; };
-      const onError  = () => { canvas.style.opacity = '1'; };
+      onLoaded = () => { video.classList.add('loaded'); canvas.style.opacity = '0.5'; };
+      onError = () => { canvas.style.opacity = '1'; };
       video.addEventListener('loadeddata', onLoaded);
       video.addEventListener('error', onError);
     }
 
     return () => {
-      cancelAnimationFrame(animId);
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', resizeCanvas);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+      if (video && onLoaded && onError) {
+        video.removeEventListener('loadeddata', onLoaded);
+        video.removeEventListener('error', onError);
+      }
     };
   }, []);
 

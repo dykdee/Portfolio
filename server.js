@@ -226,10 +226,18 @@ function getWelcomeMessage() {
   };
 }
 
-function createSession() {
+function normalizeSessionId(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim();
+}
+
+function createSession(sessionId = createSessionId()) {
   const timestamp = new Date().toISOString();
   const session = {
-    sessionId: createSessionId(),
+    sessionId,
     createdAt: timestamp,
     updatedAt: timestamp,
     recentTurns: [],
@@ -251,6 +259,21 @@ function getSession(sessionId) {
   }
 
   return chatbotSessions.get(sessionId) || null;
+}
+
+function getOrCreateSession(sessionId) {
+  const normalizedSessionId = normalizeSessionId(sessionId);
+
+  if (!normalizedSessionId) {
+    return { session: createSession(), recovered: false };
+  }
+
+  const existing = getSession(normalizedSessionId);
+  if (existing) {
+    return { session: existing, recovered: false };
+  }
+
+  return { session: createSession(normalizedSessionId), recovered: true };
 }
 
 function compactTurnsForPrompt(turns) {
@@ -847,7 +870,7 @@ try {
 app.use(cors());
 app.use(express.json());
 
-app.get('/firebase-config.js', (req, res) => {
+function handleFirebaseConfigScript(req, res) {
   const missingKeys = Object.entries(firebaseWebConfig)
     .filter(([, value]) => !value)
     .map(([key]) => key);
@@ -859,7 +882,10 @@ app.get('/firebase-config.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.send(`${warning}\nwindow.FIREBASE_CONFIG = ${JSON.stringify(firebaseWebConfig)};`);
-});
+}
+
+app.get('/firebase-config.js', handleFirebaseConfigScript);
+app.get('/api/firebase-config.js', handleFirebaseConfigScript);
 
 const staticRootPath = fs.existsSync(path.join(__dirname, 'dist'))
   ? path.join(__dirname, 'dist')
@@ -867,10 +893,13 @@ const staticRootPath = fs.existsSync(path.join(__dirname, 'dist'))
 
 app.use(express.static(staticRootPath));
 
-// Health check
-app.get('/health', (req, res) => {
+function handleHealth(req, res) {
   res.json({ status: 'ok' });
-});
+}
+
+// Health check
+app.get('/health', handleHealth);
+app.get('/api/health', handleHealth);
 
 function getChatbotConfigStatus() {
   const knowledge = loadChatbotKnowledge();
@@ -913,15 +942,20 @@ async function handleChatbotSessionCreate(req, res) {
 }
 
 async function handleChatbotMessage(req, res) {
-  const session = getSession(req.body?.sessionId);
+  const requestedSessionId = normalizeSessionId(req.body?.sessionId);
+  const { session, recovered } = getOrCreateSession(requestedSessionId);
   const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
 
-  if (!session) {
-    return res.status(404).json({ error: 'Session not found.' });
+  if (!requestedSessionId) {
+    return res.status(400).json({ error: 'Session ID is required.' });
   }
 
   if (!message) {
     return res.status(400).json({ error: 'Message is required.' });
+  }
+
+  if (recovered) {
+    console.warn(`⚠️  Recovered missing chatbot session: ${requestedSessionId}`);
   }
 
   const intent = inferIntent(message);
@@ -953,7 +987,7 @@ async function handleChatbotMessage(req, res) {
 }
 
 async function handleChatbotSummarize(req, res) {
-  const session = getSession(req.body?.sessionId) || createSession();
+  const { session } = getOrCreateSession(req.body?.sessionId);
   const target = typeof req.body?.target === 'string' ? req.body.target.trim() : 'portfolio';
   const audience = typeof req.body?.audience === 'string' ? req.body.audience.trim() : session.userIntentProfile.audience || 'general';
   const subjectId = typeof req.body?.subjectId === 'string' ? req.body.subjectId.trim() : '';
