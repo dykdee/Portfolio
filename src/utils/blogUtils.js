@@ -1,6 +1,46 @@
 // Blog post utilities for normalization, filtering, and formatting
 
-const PLACEHOLDER_MEDIA_URL = 'https://via.placeholder.com/640x360?text=Blog+Preview';
+function escapeXml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export function createMediaPlaceholderUrl({
+  label = 'Media',
+  width = 640,
+  height = 360
+} = {}) {
+  const safeWidth = Number.isFinite(width) ? width : 640;
+  const safeHeight = Number.isFinite(height) ? height : 360;
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${safeWidth}" height="${safeHeight}" viewBox="0 0 ${safeWidth} ${safeHeight}">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0f172a" />
+          <stop offset="100%" stop-color="#1e293b" />
+        </linearGradient>
+      </defs>
+      <rect width="${safeWidth}" height="${safeHeight}" rx="28" fill="url(#bg)" />
+      <circle cx="${Math.round(safeWidth * 0.2)}" cy="${Math.round(safeHeight * 0.28)}" r="${Math.round(Math.min(safeWidth, safeHeight) * 0.08)}" fill="rgba(148,163,184,0.16)" />
+      <circle cx="${Math.round(safeWidth * 0.78)}" cy="${Math.round(safeHeight * 0.72)}" r="${Math.round(Math.min(safeWidth, safeHeight) * 0.11)}" fill="rgba(148,163,184,0.12)" />
+      <text x="50%" y="50%" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="${Math.max(18, Math.round(safeWidth * 0.05))}" font-weight="600" text-anchor="middle" dominant-baseline="middle">
+        ${escapeXml(label)}
+      </text>
+    </svg>
+  `.trim();
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+const PLACEHOLDER_MEDIA_URL = createMediaPlaceholderUrl({
+  label: 'Blog Preview',
+  width: 640,
+  height: 360
+});
 
 export function determineMediaTypeFromUrl(url) {
   if (!url) return 'image';

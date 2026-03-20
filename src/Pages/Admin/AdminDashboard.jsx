@@ -25,9 +25,13 @@ import { twMerge } from 'tailwind-merge';
 import { database } from '../../firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAdminPosts } from '../../hooks/useBlogPosts';
-import { determineMediaTypeFromUrl, formatDate, generateSlug } from '../../utils/blogUtils';
+import { createMediaPlaceholderUrl, determineMediaTypeFromUrl, formatDate, generateSlug } from '../../utils/blogUtils';
 
-const PLACEHOLDER_MEDIA_URL = 'https://via.placeholder.com/1200x630?text=Media';
+const PLACEHOLDER_MEDIA_URL = createMediaPlaceholderUrl({
+  label: 'Media',
+  width: 1200,
+  height: 630
+});
 
 const EMPTY_BLOG_DRAFT = {
   title: '',
