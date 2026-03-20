@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "chatbot/citation.schema.json",
+  "title": "Chatbot Citation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["label", "sourceId", "anchor"],
+  "properties": {
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "anchor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

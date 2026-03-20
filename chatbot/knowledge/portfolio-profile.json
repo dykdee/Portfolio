@@ -1,0 +1,175 @@
+{
+  "generatedAt": "2026-03-20T00:00:00.000Z",
+  "site": {
+    "name": "Dee Portfolio",
+    "route": "/",
+    "summary": "Personal portfolio for Agoma Divine E., presenting positioning, skills, projects, credentials, contact channels, and blog content."
+  },
+  "records": [
+    {
+      "id": "identity-core",
+      "type": "identity",
+      "title": "Agoma Divine E.",
+      "summary": "Core identity and role statement for Dee.",
+      "content": "Agoma Divine E., also referred to as Dee, is presented as an AI Product & Systems Engineer focused on building intelligent systems with AI and machine learning to tackle real-world challenges and deliver innovative solutions.",
+      "tags": ["identity", "ai", "systems", "engineer"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/Hero/Hero.jsx",
+        "anchor": "home"
+      },
+      "priority": 1,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "positioning-hero",
+      "type": "positioning",
+      "title": "Hero positioning",
+      "summary": "Top-level positioning and value statement.",
+      "content": "The portfolio positions Dee as someone building intelligent systems with AI and machine learning, with an emphasis on solving real-world problems and producing practical solutions.",
+      "tags": ["positioning", "ai", "machine learning", "solutions"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/Hero/Hero.jsx",
+        "anchor": "home"
+      },
+      "priority": 0.96,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "about-summary",
+      "type": "about",
+      "title": "About summary",
+      "summary": "Short summary of Dee's working style and interests.",
+      "content": "Dee is described as a passionate developer who enjoys creating elegant solutions to complex problems, bringing ideas to life through clean code and thoughtful design. The about section also highlights interest in exploring new technologies, contributing to open-source projects, and sharing knowledge with the developer community.",
+      "tags": ["about", "clean code", "design", "open source"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/About/About.jsx",
+        "anchor": "about"
+      },
+      "priority": 0.92,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "about-stats",
+      "type": "about",
+      "title": "About stats",
+      "summary": "Headline portfolio stats shown in the about section.",
+      "content": "The portfolio shows 50+ projects completed, 2+ years of experience, and 100% client satisfaction.",
+      "tags": ["stats", "projects", "experience", "client satisfaction"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/About/About.jsx",
+        "anchor": "about"
+      },
+      "priority": 0.9,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "skills-frontend",
+      "type": "skills",
+      "title": "Frontend skills",
+      "summary": "Frontend technologies highlighted in the skills section.",
+      "content": "Frontend skills listed are HTML/CSS, JavaScript/TypeScript, React, and Vue.js. The section frames these as part of Dee's capability to build modern web applications.",
+      "tags": ["frontend", "html", "css", "javascript", "typescript", "react", "vue"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/Skills/Skills.jsx",
+        "anchor": "skills"
+      },
+      "priority": 0.95,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "skills-backend",
+      "type": "skills",
+      "title": "Backend skills",
+      "summary": "Backend technologies highlighted in the skills section.",
+      "content": "Backend skills listed are Node.js, Python, MongoDB, Express, and PostgreSQL.",
+      "tags": ["backend", "node", "python", "mongodb", "express", "postgresql"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/Skills/Skills.jsx",
+        "anchor": "skills"
+      },
+      "priority": 0.95,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "skills-tools",
+      "type": "skills",
+      "title": "Tools and platforms",
+      "summary": "Tools and platforms highlighted in the skills section.",
+      "content": "Tools and platforms listed are Git & GitOps, Docker, SSH, Linux, Cursor, Webpack, Firebase, VS Code, Copilot, Vercel, and AWS. The skills section also notes active open-source contribution and maintenance of utility libraries.",
+      "tags": ["tools", "docker", "linux", "firebase", "vercel", "aws", "open source"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/Skills/Skills.jsx",
+        "anchor": "skills"
+      },
+      "priority": 0.91,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "contact-core",
+      "type": "contact",
+      "title": "Primary contact channels",
+      "summary": "Direct ways to contact Dee through the portfolio.",
+      "content": "Dee can be reached through email at me@dykdee.xyz, LinkedIn, GitHub, Telegram, and WhatsApp. The contact section invites discussions about new projects, creative ideas, and opportunities.",
+      "tags": ["contact", "email", "linkedin", "github", "telegram", "whatsapp"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/Contact/Contact.jsx",
+        "anchor": "contact"
+      },
+      "priority": 0.98,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "resume-core",
+      "type": "resume",
+      "title": "Resume access",
+      "summary": "Resume file location exposed by the portfolio.",
+      "content": "The resume is available as a PDF at /media/Files/MyResume.pdf and can be opened from the about section.",
+      "tags": ["resume", "pdf"],
+      "source": {
+        "kind": "site-section",
+        "path": "src/Pages/About/About.jsx",
+        "anchor": "about"
+      },
+      "priority": 0.87,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "projects-runtime-source",
+      "type": "projects",
+      "title": "Projects runtime source",
+      "summary": "Portfolio projects are loaded dynamically from Firebase.",
+      "content": "Featured projects displayed on the portfolio are loaded at runtime from the Firebase Realtime Database path portfolioProjects. The portfolio UI supports project title, description, category, status, tags, live URL, GitHub URL, image, and video media.",
+      "tags": ["projects", "firebase", "dynamic content"],
+      "source": {
+        "kind": "code-contract",
+        "path": "src/hooks/useBlogPosts.js",
+        "anchor": "usePortfolioProjects"
+      },
+      "priority": 0.85,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "blog-runtime-source",
+      "type": "blog",
+      "title": "Blog runtime source",
+      "summary": "Blog posts are loaded dynamically from Firebase.",
+      "content": "Public blog posts are loaded from the Firebase Realtime Database path blogPosts, normalized, filtered to published content, and sorted before rendering.",
+      "tags": ["blog", "firebase", "published posts"],
+      "source": {
+        "kind": "code-contract",
+        "path": "src/hooks/useBlogPosts.js",
+        "anchor": "useBlogPosts"
+      },
+      "priority": 0.78,
+      "updatedAt": "2026-03-20T00:00:00.000Z"
+    }
+  ]
+}

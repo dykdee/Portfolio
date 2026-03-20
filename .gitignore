@@ -1,4 +1,9 @@
 node_modules/
+dist/
+coverage/
+*.log
+.vercel/
+.DS_Store
 serviceAccountKey.json
 firebase-config.js
 .env
