@@ -15,6 +15,20 @@ async function fetchText(pathname) {
   return { response, text };
 }
 
+async function fetchJson(pathname, options = {}) {
+  const response = await fetch(`${baseUrl}${pathname}`, options);
+  const text = await response.text();
+  let json = null;
+
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = null;
+  }
+
+  return { response, text, json };
+}
+
 async function waitForServer() {
   const deadline = Date.now() + startupTimeoutMs;
 
@@ -43,6 +57,29 @@ async function runChecks() {
   const firebaseConfig = await fetchText('/firebase-config.js');
   if (!firebaseConfig.response.ok || !firebaseConfig.text.includes('window.FIREBASE_CONFIG')) {
     throw new Error(`Firebase config endpoint failed with status ${firebaseConfig.response.status}.`);
+  }
+
+  const chatbotStatus = await fetchJson('/api/chatbot/config/status');
+  if (!chatbotStatus.response.ok || !chatbotStatus.json?.status) {
+    throw new Error(`Chatbot config status failed with status ${chatbotStatus.response.status}: ${chatbotStatus.text}`);
+  }
+
+  const chatbotSession = await fetchJson('/api/chatbot/session', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({})
+  });
+  if (!chatbotSession.response.ok || !chatbotSession.json?.sessionId || !chatbotSession.json?.message) {
+    throw new Error(`Chatbot session bootstrap failed with status ${chatbotSession.response.status}: ${chatbotSession.text}`);
+  }
+
+  const firebaseSecretStatus = await fetchJson('/api/admin/secrets/firebase-config/status');
+  if (firebaseSecretStatus.response.status !== 401 || !firebaseSecretStatus.json?.error) {
+    throw new Error(
+      `Firebase secret status endpoint failed with status ${firebaseSecretStatus.response.status}: ${firebaseSecretStatus.text}`
+    );
   }
 
   const adminPage = await fetchText('/admin');

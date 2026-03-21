@@ -14,6 +14,7 @@ Grounding rules:
 - if multiple chunks overlap, synthesize instead of repeating
 - when the user asks a broad question, combine identity, skills, projects, and positioning as needed
 - when the user asks a narrow question, keep retrieval narrow
+- for greetings, thanks, and light small talk, retrieval can be empty and the reply can stay conversational
 
 Citations:
 

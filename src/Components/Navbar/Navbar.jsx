@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { scrollToSectionById } from '../../utils/scrollToSection';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { navigateToBlogTop, navigateToHomeSection } from '../../utils/homeNavigation';
+import { getActiveHomeSectionId } from '../../utils/scrollToSection';
 import './Navbar.css';
 
 const NAV_LINKS = [
@@ -8,7 +9,7 @@ const NAV_LINKS = [
   { id: 'about',    label: 'About' },
   { id: 'projects', label: 'Projects' },
   { id: 'skills',   label: 'Skills' },
-  { id: null,       label: 'Blog', href: '/blog' },
+  { id: 'blog',     label: 'Blog' },
   { id: 'contact',  label: 'Contact' },
 ];
 
@@ -17,7 +18,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen]   = useState(false);
   const [activeId, setActiveId]   = useState('home');
   const location = useLocation();
-  const isHomeRoute = location.pathname === '/' || location.pathname === '/home';
+  const navigate = useNavigate();
+  const isHomeRoute = location.pathname === '/';
   const isBlogRoute = location.pathname === '/blog';
 
   useEffect(() => {
@@ -28,25 +30,27 @@ export default function Navbar() {
         return;
       }
 
-      // Active section highlighting
-      const sections = document.querySelectorAll('section[id]');
-      let current = 'home';
-      sections.forEach((section) => {
-        const top    = section.offsetTop - 80;
-        const bottom = top + section.offsetHeight;
-        if (window.scrollY >= top && window.scrollY < bottom) {
-          current = section.id;
-        }
-      });
-      setActiveId(current);
+      setActiveId(getActiveHomeSectionId());
     }
 
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isHomeRoute]);
 
   function scrollToSection(id) {
-    scrollToSectionById(id);
+    navigateToHomeSection({ sectionId: id, location, navigate });
+    setMenuOpen(false);
+  }
+
+  function goToBlogTop() {
+    navigateToBlogTop({ location, navigate });
+    setMenuOpen(false);
+  }
+
+  function goToHomeTop(event) {
+    event.preventDefault();
+    navigateToHomeSection({ sectionId: 'home', location, navigate });
     setMenuOpen(false);
   }
 
@@ -54,37 +58,32 @@ export default function Navbar() {
     <nav className={`navbar${scrolled ? ' scrolled' : ''}`} id="navbar">
       <div className="container">
         <div className="nav-brand">
-          <Link to="/home" onClick={() => setMenuOpen(false)} aria-label="Go to home page">
+          <Link to="/" onClick={goToHomeTop} aria-label="Go to home page">
             <img src="/media/dee_logo_white.png" alt="Dee Logo" className="nav-logo" />
           </Link>
         </div>
 
         <ul className={`nav-menu${menuOpen ? ' active' : ''}`} id="nav-menu">
           {NAV_LINKS.map((link) =>
-            link.href ? (
+            link.id === 'blog' ? (
               <li key={link.label}>
-                <Link
-                  to={link.href}
-                  className={`nav-link${isBlogRoute && link.href === '/blog' ? ' active' : ''}`}
-                  onClick={() => setMenuOpen(false)}
+                <button
+                  type="button"
+                  className={`nav-link${isBlogRoute ? ' active' : ''}`}
+                  onClick={goToBlogTop}
                 >
                   {link.label}
-                </Link>
+                </button>
               </li>
             ) : (
               <li key={link.id}>
-                {isHomeRoute ? (
-                  <button
-                    className={`nav-link${activeId === link.id ? ' active' : ''}`}
-                    onClick={() => scrollToSection(link.id)}
-                  >
-                    {link.label}
-                  </button>
-                ) : (
-                  <Link to={`/home#${link.id}`} className="nav-link" onClick={() => setMenuOpen(false)}>
-                    {link.label}
-                  </Link>
-                )}
+                <button
+                  type="button"
+                  className={`nav-link${isHomeRoute && activeId === link.id ? ' active' : ''}`}
+                  onClick={() => scrollToSection(link.id)}
+                >
+                  {link.label}
+                </button>
               </li>
             )
           )}

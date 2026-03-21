@@ -2395,67 +2395,6 @@ body.admin-page {
     min-height: 120px;
 }
 
-/* Footer */
-.footer {
-    background: rgba(15, 23, 42, 0.95);
-    color: white;
-    text-align: center;
-    padding: 2.5rem 0;
-    position: relative;
-    z-index: 1;
-}
-
-.footer-content {
-    display: grid;
-    gap: 1.25rem;
-    align-items: center;
-    justify-items: center;
-    text-align: center;
-}
-
-.footer-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.footer-tagline {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.95rem;
-}
-
-.footer-links {
-    display: flex;
-    gap: 1.25rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.footer-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.75);
-    text-decoration: none;
-    font-size: 0.95rem;
-    transition: var(--transition);
-}
-
-.footer-link svg {
-    width: 18px;
-    height: 18px;
-}
-
-.footer-link:hover,
-.footer-link:focus-visible {
-    color: #ffffff;
-}
-
-.footer-copy {
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0.85rem;
-}
-
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -3666,37 +3605,6 @@ body.admin-page {
     .blog-card-media {
         height: 180px;
     }
-}
-
-/* Footer */
-.footer {
-    background: var(--primary-color);
-    color: white;
-    padding: 40px 0;
-    text-align: center;
-}
-
-.footer-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-
-.footer-links {
-    display: flex;
-    gap: 20px;
-}
-
-.footer-links a {
-    color: white;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.footer-links a:hover {
-    opacity: 0.8;
 }
 
 /* Responsive Blog Layout */

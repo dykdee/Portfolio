@@ -2,7 +2,24 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, ExternalLink, Github } from 'lucide-react';
 import { usePortfolioProjects } from '../../hooks/useBlogPosts';
+import { createMediaPlaceholderUrl } from '../../utils/blogUtils';
 import './Projects.css';
+
+const PROJECT_PLACEHOLDER_IMAGE = createMediaPlaceholderUrl({
+  label: 'Project Preview',
+  width: 1200,
+  height: 630
+});
+
+function resolveProjectImage(project) {
+  const image = typeof project?.image === 'string' ? project.image.trim() : '';
+
+  if (!image || /via\.placeholder\.com/i.test(image)) {
+    return PROJECT_PLACEHOLDER_IMAGE;
+  }
+
+  return image;
+}
 
 export default function Projects() {
   const { projects, loading } = usePortfolioProjects();
@@ -46,6 +63,7 @@ export default function Projects() {
     : [];
 
   const projectAccent = 'var(--primary-color)';
+  const currentProjectImage = resolveProjectImage(currentProject);
 
   return (
     <section
@@ -97,7 +115,7 @@ export default function Projects() {
                   {currentProject.video ? (
                     <video
                       src={currentProject.video}
-                      poster={currentProject.image}
+                      poster={currentProjectImage}
                       autoPlay
                       loop
                       muted
@@ -106,7 +124,7 @@ export default function Projects() {
                     />
                   ) : (
                     <img
-                      src={currentProject.image || '/media/profile.png'}
+                      src={currentProjectImage}
                       alt={currentProject.title || 'Project'}
                       className="project-media-asset"
                       referrerPolicy="no-referrer"
