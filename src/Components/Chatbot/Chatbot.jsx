@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { getActiveHomeSectionId, scrollToSectionById } from '../../utils/scrollToSection';
 import './Chatbot.css';
 
 const API_BASE = '/api/chatbot';
@@ -12,7 +13,7 @@ const STAGE_LABELS = {
 function getPageContext() {
   return {
     route: window.location.pathname,
-    section: window.location.hash ? window.location.hash.slice(1) : 'home'
+    section: window.location.pathname === '/' ? getActiveHomeSectionId() : 'home'
   };
 }
 
@@ -47,13 +48,7 @@ async function postJson(url, body, timeoutMs = 12000) {
 }
 
 function scrollToAnchor(anchor) {
-  const element = document.getElementById(anchor);
-  if (!element) {
-    return false;
-  }
-
-  window.scrollTo({ top: element.offsetTop - 70, behavior: 'smooth' });
-  return true;
+  return scrollToSectionById(anchor);
 }
 
 function createUserMessage(text) {

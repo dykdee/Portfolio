@@ -42,6 +42,7 @@ const chatbotSessions = new Map();
 
 const CHATBOT_STAGE_TRACE = ['thinking', 'searching', 'drafting'];
 const CHATBOT_RECENT_TURN_LIMIT = 10;
+const SOCIAL_INTENTS = new Set(['greeting', 'small-talk', 'gratitude', 'farewell']);
 
 function getRuntimeConfigValue(configKey) {
   const envKeys = FIREBASE_ENV_KEY_MAP[configKey] || [];
@@ -126,6 +127,10 @@ function inferIntent(message) {
   const q = String(message || '').toLowerCase();
 
   if (/\b(hi|hello|hey|yo|good\s*(morning|afternoon|evening))\b/.test(q)) return 'greeting';
+  if (/\b(how are you|how're you|how is it going|how's it going|how have you been|what'?s up|sup)\b/.test(q)) return 'small-talk';
+  if (/\b(how i am doing|how i'm doing|ask me how i am doing|ask me how i'm doing)\b/.test(q)) return 'small-talk';
+  if (/\b(thanks|thank you|appreciate it|much appreciated)\b/.test(q)) return 'gratitude';
+  if (/\b(bye|goodbye|see you|talk later|catch you later|take care)\b/.test(q)) return 'farewell';
   if (/\b(recruiter|hire|hiring|fit for role|candidate|role fit|strong fit|fit for|job|position)\b/.test(q)) return 'recruiter-fit';
   if (/\b(client|agency|contract|freelance|project help)\b/.test(q)) return 'client-fit';
   if (/\b(summary|summarize|overview|snapshot)\b/.test(q)) return 'summarization';
@@ -148,6 +153,10 @@ function inferAudience(message, priorAudience = 'unknown') {
   if (priorAudience && priorAudience !== 'unknown') return priorAudience;
 
   return 'general';
+}
+
+function isSocialIntent(intent) {
+  return SOCIAL_INTENTS.has(intent);
 }
 
 function scoreKnowledgeRecord(record, messageTokens, intent) {
@@ -185,6 +194,13 @@ function scoreKnowledgeRecord(record, messageTokens, intent) {
 }
 
 function retrieveKnowledge(message, intent) {
+  if (isSocialIntent(intent)) {
+    return {
+      site: null,
+      records: []
+    };
+  }
+
   const knowledge = loadChatbotKnowledge();
   const messageTokens = tokenizeText(message);
   const ranked = knowledge.records
@@ -344,24 +360,44 @@ USER MESSAGE
 ${message}`;
 }
 
-function createFallbackResponse({ message, retrieval, intent, audience }) {
+function createSocialFallbackResponse({ message, intent }) {
+  const normalized = String(message || '').toLowerCase();
+  let summary = 'Hey! I\'m here and ready to help with anything about Dee whenever you want.';
+
   if (intent === 'greeting') {
-    return {
-      summary: 'Hey, happy to help. Ask me anything about Dee\u2019s work, skills, or background.',
-      sections: [
-        {
-          label: 'How I Can Help',
-          content: 'Ask about skills, projects, role fit, contact, or request a portfolio summary. Please allow a few minutes between requests so responses stay accurate.'
-        }
-      ],
-      citationIds: [],
-      suggestedActions: [
-        { type: 'scroll', label: 'View Skills', target: 'skills' },
-        { type: 'scroll', label: 'See Projects', target: 'projects' },
-        { type: 'summarize', label: 'Summarize Portfolio', target: 'portfolio' }
-      ],
-      pinnedFacts: []
-    };
+    const timeOfDayMatch = normalized.match(/good\s*(morning|afternoon|evening)/);
+    if (timeOfDayMatch?.[1]) {
+      const greeting = timeOfDayMatch[1];
+      summary = `Good ${greeting}! How are you doing? I can also help with anything about Dee when you're ready.`;
+    } else {
+      summary = 'Hey! How are you doing? I can help with Dee\'s work, skills, projects, or background whenever you want.';
+    }
+  } else if (intent === 'small-talk') {
+    if (/\b(how i am doing|how i'm doing|ask me how i am doing|ask me how i'm doing)\b/.test(normalized)) {
+      summary = 'Fair point, how are you doing? I\'m here for Dee-related questions whenever you want to switch back.';
+    } else if (/\bwhat'?s up|sup\b/.test(normalized)) {
+      summary = 'Not much, just here and ready to help. How are you doing?';
+    } else {
+      summary = 'I\'m doing well, thanks for asking. How are you doing? I can also help with anything about Dee when you want.';
+    }
+  } else if (intent === 'gratitude') {
+    summary = 'Anytime. If you want, I can also help with Dee\'s projects, skills, blog posts, or background.';
+  } else if (intent === 'farewell') {
+    summary = 'See you around. If you come back with a question about Dee, I\'ll be here.';
+  }
+
+  return {
+    summary,
+    sections: [],
+    citationIds: [],
+    suggestedActions: [],
+    pinnedFacts: []
+  };
+}
+
+function createFallbackResponse({ message, retrieval, intent, audience }) {
+  if (isSocialIntent(intent)) {
+    return createSocialFallbackResponse({ message, intent });
   }
 
   const topRecords = retrieval.records;
@@ -807,13 +843,13 @@ function persistFirebaseSecrets(values) {
 }
 
 async function requireAuthenticatedAdmin(req, res, next) {
-  if (!admin.apps.length) {
-    return res.status(503).json({ error: 'Admin authentication unavailable.' });
-  }
-
   const authHeader = req.headers.authorization || '';
   if (!authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Missing Bearer token.' });
+  }
+
+  if (!admin.apps.length) {
+    return res.status(503).json({ error: 'Admin authentication unavailable.' });
   }
 
   try {
@@ -868,7 +904,14 @@ try {
 }
 
 app.use(cors());
-app.use(express.json());
+const jsonParser = express.json();
+app.use((req, res, next) => {
+  if (typeof req.body !== 'undefined') {
+    return next();
+  }
+
+  return jsonParser(req, res, next);
+});
 
 function handleFirebaseConfigScript(req, res) {
   const missingKeys = Object.entries(firebaseWebConfig)
