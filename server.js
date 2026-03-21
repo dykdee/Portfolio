@@ -843,13 +843,13 @@ function persistFirebaseSecrets(values) {
 }
 
 async function requireAuthenticatedAdmin(req, res, next) {
-  if (!admin.apps.length) {
-    return res.status(503).json({ error: 'Admin authentication unavailable.' });
-  }
-
   const authHeader = req.headers.authorization || '';
   if (!authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Missing Bearer token.' });
+  }
+
+  if (!admin.apps.length) {
+    return res.status(503).json({ error: 'Admin authentication unavailable.' });
   }
 
   try {
