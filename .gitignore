@@ -3,12 +3,14 @@ dist/
 coverage/
 *.log
 .vercel/
-.playwright-cli/
 .DS_Store
-.editorconfig
 serviceAccountKey.json
 firebase-config.js
 .env
 .env.*
 !.env.example
 .firebase/
+.github/prompts/
+./github/copilot-instructions.md/
+.playwright-cli/
+.editorconfig
