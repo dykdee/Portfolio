@@ -27,7 +27,7 @@ const SOCIAL_LINKS = [
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="footer">
+    <footer id="footer" className="footer">
       <div className="container footer-inner">
         <div className="footer-brand">
           <span className="footer-name">Agoma Divine E.</span>
