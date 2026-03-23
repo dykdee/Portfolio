@@ -56,10 +56,23 @@ export function scrollToSectionById(sectionId, options = {}) {
     return false;
   }
 
-  const targetTop = window.scrollY + section.getBoundingClientRect().top - getNavbarClearance(options);
+  let targetTop = window.scrollY + section.getBoundingClientRect().top - getNavbarClearance(options);
+
+  if (normalizedSectionId === 'contact') {
+    const footer = document.getElementById('footer');
+
+    if (footer) {
+      const footerBottom = window.scrollY + footer.getBoundingClientRect().bottom;
+      const footerAlignedTop = footerBottom - window.innerHeight;
+      targetTop = Math.max(targetTop, footerAlignedTop);
+    }
+  }
+
+  const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  const clampedTop = Math.min(Math.max(0, targetTop), maxScrollTop);
 
   window.scrollTo({
-    top: Math.max(0, targetTop),
+    top: clampedTop,
     behavior,
   });
 

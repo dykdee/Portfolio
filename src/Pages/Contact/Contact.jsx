@@ -126,7 +126,7 @@ export default function Contact() {
                 value={form.message}
                 onChange={handleChange}
                 placeholder="Your message..."
-                rows={6}
+                rows={5}
                 required
               />
             </div>
