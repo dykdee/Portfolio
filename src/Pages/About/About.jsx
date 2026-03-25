@@ -134,13 +134,10 @@ export default function About() {
         <div className="about-content">
           <div className="about-text">
             <p>
-              I'm a passionate developer with a love for creating elegant solutions to complex problems.
-              With expertise in modern web technologies, I bring ideas to life through clean code and
-              thoughtful design.
+              I’m an engineer driven by the challenge of turning complexity into clarity, building systems that not only work but also solve meaningful problems.< br />Whether it’s designing scalable products, integrating AI capabilities, or improving how software performs in real-world environments, I focus on delivering practical value.
             </p>
             <p>
-              When I'm not coding, you can find me exploring new technologies, contributing to open-source
-              projects, or sharing knowledge with the developer community.
+              When I'm not coding, I'm exploring new technologies, studying how intelligent systems evolve, contributing to open-source projects, or sharing knowledge with the developer community.
             </p>
 
             <div className="about-stats-wrapper">
