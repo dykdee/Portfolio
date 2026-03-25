@@ -199,8 +199,9 @@ export default function Hero() {
             <span className="role">AI Product &amp; Systems Engineer</span>
           </h1>
           <p className="hero-description">
-            Building intelligent systems with AI, machine learning, tackling real-world challenges and
-            proffering innovative solutions.
+            Stop building AI demos. Start deploying intelligent systems with Dee.< br />
+            Building intelligent systems that remove repetitive workflows, improve decision-making, and make products smarter.< br />
+            From machine learning integration to scalable system design, I turn AI into usable infrastructure.
           </p>
           <div className="hero-buttons">
             <button className="btn btn-primary" onClick={() => scrollTo('projects')}>View My Work</button>
