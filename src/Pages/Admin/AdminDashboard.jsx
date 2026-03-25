@@ -211,6 +211,9 @@ export default function AdminDashboard({ user }) {
   const [firebaseSecretStatus, setFirebaseSecretStatus] = useState({});
   const [secretsLoading, setSecretsLoading] = useState(false);
   const [secretsSaving, setSecretsSaving] = useState(false);
+  const [aiTelemetry, setAiTelemetry] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   const [flash, setFlash] = useState({ type: '', message: '' });
   const contentScrollRef = useRef(null);
@@ -271,6 +274,24 @@ export default function AdminDashboard({ user }) {
       showFlash('error', err.message || 'Failed to load credentials status.');
     } finally {
       setSecretsLoading(false);
+    }
+  };
+
+  const loadAiTelemetry = async () => {
+    if (!user) {
+      return;
+    }
+
+    setAiLoading(true);
+    setAiError('');
+    try {
+      const headers = await getAuthorizedHeaders();
+      const payload = await fetchJson('/api/admin/chatbot/telemetry', { headers });
+      setAiTelemetry(payload);
+    } catch (err) {
+      setAiError(err.message || 'Failed to load AI assistant telemetry.');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -368,6 +389,12 @@ export default function AdminDashboard({ user }) {
       loadFirebaseSecretStatus();
     }
   }, [user?.uid]);
+
+  useEffect(() => {
+    if (activeTab === 'ai' && user?.uid) {
+      loadAiTelemetry();
+    }
+  }, [activeTab, user?.uid]);
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
@@ -1285,17 +1312,163 @@ export default function AdminDashboard({ user }) {
     </div>
   );
 
-  const renderAi = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-zinc-900">AI Assistant Logs</h2>
-        <button className="px-4 py-2 text-sm font-medium bg-black text-white rounded-xl hover:bg-zinc-800">Assistant Settings</button>
+  const renderAi = () => {
+    const summary = aiTelemetry?.summary || {};
+    const status = aiTelemetry?.status || {};
+    const sessions = aiTelemetry?.sessions || [];
+    const topIntents = aiTelemetry?.topIntents || [];
+
+    const formatTimestamp = (value) => {
+      if (!value) {
+        return '-';
+      }
+
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        return '-';
+      }
+
+      return parsed.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    };
+
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-2xl font-bold text-zinc-900">AI Assistant Logs</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={loadAiTelemetry}
+              disabled={aiLoading}
+              className="px-4 py-2 text-sm border border-zinc-200 rounded-xl hover:bg-zinc-50 disabled:opacity-60"
+            >
+              {aiLoading ? 'Refreshing...' : 'Refresh Logs'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('settings')}
+              className="px-4 py-2 text-sm font-medium bg-black text-white rounded-xl hover:bg-zinc-800"
+            >
+              Assistant Settings
+            </button>
+          </div>
+        </div>
+
+        {aiError ? (
+          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700">
+            {aiError}
+          </div>
+        ) : null}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Active Sessions</p>
+            <p className="mt-2 text-2xl font-bold text-zinc-900">{summary.activeSessions ?? 0}</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Total Requests</p>
+            <p className="mt-2 text-2xl font-bold text-zinc-900">{summary.totalRequests ?? 0}</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Fallback Responses</p>
+            <p className="mt-2 text-2xl font-bold text-zinc-900">{summary.fallbackResponses ?? 0}</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Provider Errors</p>
+            <p className="mt-2 text-2xl font-bold text-zinc-900">{summary.providerErrors ?? 0}</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={cn('text-xs px-2 py-1 rounded-full border', status.gemini?.configured ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200')}>
+              Gemini {status.gemini?.configured ? 'Configured' : 'Missing'}
+            </span>
+            <span className={cn('text-xs px-2 py-1 rounded-full border', status.prompts?.configured ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
+              Prompts {status.prompts?.configured ? 'Ready' : 'Incomplete'}
+            </span>
+            <span className={cn('text-xs px-2 py-1 rounded-full border', status.knowledge?.configured ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
+              Knowledge Records: {status.knowledge?.records ?? 0}
+            </span>
+            <span className="text-xs px-2 py-1 rounded-full border bg-zinc-50 text-zinc-700 border-zinc-200">
+              Avg Recent Turns: {summary.avgRecentTurns ?? 0}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-zinc-900">Top Intents</h3>
+            <p className="text-xs text-zinc-500">Based on active in-memory sessions</p>
+          </div>
+          <div className="p-6">
+            {topIntents.length ? (
+              <div className="flex flex-wrap gap-2">
+                {topIntents.map((intent) => (
+                  <span key={intent.intent} className="px-3 py-1.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-700">
+                    {intent.intent} ({intent.count})
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-500">No intent activity yet.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-zinc-900">Recent Sessions</h3>
+            <p className="text-xs text-zinc-500">Newest first</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-zinc-50 border-y border-zinc-100">
+                <tr>
+                  <th className="px-6 py-3 text-xs font-bold text-zinc-500 uppercase tracking-wider">Session</th>
+                  <th className="px-6 py-3 text-xs font-bold text-zinc-500 uppercase tracking-wider">Audience / Intent</th>
+                  <th className="px-6 py-3 text-xs font-bold text-zinc-500 uppercase tracking-wider">Req</th>
+                  <th className="px-6 py-3 text-xs font-bold text-zinc-500 uppercase tracking-wider">Provider</th>
+                  <th className="px-6 py-3 text-xs font-bold text-zinc-500 uppercase tracking-wider">Updated</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100">
+                {sessions.length ? sessions.map((session) => (
+                  <tr key={session.sessionId} className="hover:bg-zinc-50/50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-zinc-700 font-mono">{session.sessionId.slice(0, 8)}...</td>
+                    <td className="px-6 py-4 text-sm text-zinc-600">
+                      {session.audience || 'unknown'} / {session.lastIntent || 'general'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-zinc-600">
+                      {session.requestCount} ({session.messageRequests} msg, {session.summaryRequests} sum)
+                    </td>
+                    <td className="px-6 py-4 text-sm text-zinc-600">
+                      {session.lastProvider || 'unknown'}
+                      {session.lastProviderError ? (
+                        <span className="block text-xs text-rose-600 mt-1">{session.lastProviderError}</span>
+                      ) : null}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-zinc-600">{formatTimestamp(session.updatedAt)}</td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-sm text-zinc-500">
+                      No AI session telemetry yet. Open the chatbot on the portfolio and send a message.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div className="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm text-sm text-zinc-600">
-        AI logs panel ready. Connect this section to your assistant telemetry endpoint to monitor chat usage, intents, and model health.
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderSettings = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
