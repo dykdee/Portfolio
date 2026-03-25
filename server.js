@@ -250,6 +250,33 @@ function normalizeSessionId(value) {
   return value.trim();
 }
 
+function createSessionTelemetry() {
+  return {
+    requestCount: 0,
+    messageRequests: 0,
+    summaryRequests: 0,
+    fallbackResponses: 0,
+    providerErrors: 0,
+    lastIntent: 'general',
+    lastProvider: 'unknown',
+    lastProviderError: null,
+    lastRequestAt: null
+  };
+}
+
+function ensureSessionTelemetry(session) {
+  if (!session.telemetry || typeof session.telemetry !== 'object') {
+    session.telemetry = createSessionTelemetry();
+    return session.telemetry;
+  }
+
+  session.telemetry = {
+    ...createSessionTelemetry(),
+    ...session.telemetry
+  };
+  return session.telemetry;
+}
+
 function createSession(sessionId = createSessionId()) {
   const timestamp = new Date().toISOString();
   const session = {
@@ -262,7 +289,8 @@ function createSession(sessionId = createSessionId()) {
     userIntentProfile: {
       audience: 'unknown',
       goal: ''
-    }
+    },
+    telemetry: createSessionTelemetry()
   };
 
   chatbotSessions.set(session.sessionId, session);
@@ -314,6 +342,31 @@ function storeTurn(session, role, content) {
     updateRollingSummary(session);
   }
   session.updatedAt = new Date().toISOString();
+}
+
+function updateSessionTelemetry(session, { requestType, intent, provider, providerError }) {
+  const telemetry = ensureSessionTelemetry(session);
+
+  telemetry.requestCount += 1;
+  if (requestType === 'message') {
+    telemetry.messageRequests += 1;
+  } else if (requestType === 'summarize') {
+    telemetry.summaryRequests += 1;
+  }
+
+  if (provider === 'fallback') {
+    telemetry.fallbackResponses += 1;
+  }
+
+  if (providerError) {
+    telemetry.providerErrors += 1;
+  }
+
+  telemetry.lastIntent = intent || telemetry.lastIntent || 'general';
+  telemetry.lastProvider = provider || telemetry.lastProvider || 'unknown';
+  telemetry.lastProviderError = providerError || null;
+  telemetry.lastRequestAt = new Date().toISOString();
+  session.updatedAt = telemetry.lastRequestAt;
 }
 
 function buildPromptEnvelope({ session, message, retrieval, audience, intent }) {
@@ -966,6 +1019,77 @@ function getChatbotConfigStatus() {
   };
 }
 
+function getChatbotTelemetrySnapshot() {
+  const sessions = Array.from(chatbotSessions.values())
+    .map((session) => {
+      const telemetry = ensureSessionTelemetry(session);
+      return {
+        sessionId: session.sessionId,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        audience: session.userIntentProfile?.audience || 'unknown',
+        lastIntent: telemetry.lastIntent || session.userIntentProfile?.goal || 'general',
+        requestCount: telemetry.requestCount || 0,
+        messageRequests: telemetry.messageRequests || 0,
+        summaryRequests: telemetry.summaryRequests || 0,
+        fallbackResponses: telemetry.fallbackResponses || 0,
+        providerErrors: telemetry.providerErrors || 0,
+        lastProvider: telemetry.lastProvider || 'unknown',
+        lastProviderError: telemetry.lastProviderError ? summarizeText(telemetry.lastProviderError, 120) : null,
+        recentTurns: session.recentTurns.length,
+        lastRequestAt: telemetry.lastRequestAt || null
+      };
+    })
+    .sort((left, right) => {
+      const leftTime = new Date(left.updatedAt || left.lastRequestAt || 0).getTime();
+      const rightTime = new Date(right.updatedAt || right.lastRequestAt || 0).getTime();
+      return rightTime - leftTime;
+    });
+
+  const summary = sessions.reduce((acc, session) => {
+    acc.totalRequests += session.requestCount;
+    acc.messageRequests += session.messageRequests;
+    acc.summaryRequests += session.summaryRequests;
+    acc.fallbackResponses += session.fallbackResponses;
+    acc.providerErrors += session.providerErrors;
+    acc.totalRecentTurns += session.recentTurns;
+    return acc;
+  }, {
+    totalRequests: 0,
+    messageRequests: 0,
+    summaryRequests: 0,
+    fallbackResponses: 0,
+    providerErrors: 0,
+    totalRecentTurns: 0
+  });
+
+  const intentCounts = sessions.reduce((acc, session) => {
+    const key = session.lastIntent || 'general';
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topIntents = Object.entries(intentCounts)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 8)
+    .map(([intent, count]) => ({ intent, count }));
+
+  return {
+    status: getChatbotConfigStatus(),
+    summary: {
+      activeSessions: sessions.length,
+      totalRequests: summary.totalRequests,
+      messageRequests: summary.messageRequests,
+      summaryRequests: summary.summaryRequests,
+      fallbackResponses: summary.fallbackResponses,
+      providerErrors: summary.providerErrors,
+      avgRecentTurns: sessions.length ? Number((summary.totalRecentTurns / sessions.length).toFixed(1)) : 0
+    },
+    topIntents,
+    sessions: sessions.slice(0, 40)
+  };
+}
+
 function updateSessionIntent(session, message, intent) {
   session.userIntentProfile.audience = inferAudience(message, session.userIntentProfile.audience);
 
@@ -1020,6 +1144,12 @@ async function handleChatbotMessage(req, res) {
   mergePinnedFacts(session, generated.payload.pinnedFacts);
 
   const assistantMessage = buildAssistantMessage(generated.payload, retrieval, intent, session, generated);
+  updateSessionTelemetry(session, {
+    requestType: 'message',
+    intent,
+    provider: generated.provider,
+    providerError: generated.providerError
+  });
   storeTurn(session, 'assistant', [assistantMessage.summary, ...assistantMessage.sections.map((section) => `${section.label}: ${section.content}`)].join(' '));
 
   return res.json({
@@ -1055,6 +1185,13 @@ async function handleChatbotSummarize(req, res) {
     retrieval
   });
 
+  updateSessionTelemetry(session, {
+    requestType: 'summarize',
+    intent: 'summarization',
+    provider: generated.provider,
+    providerError: generated.providerError
+  });
+
   const assistantMessage = buildAssistantMessage(generated.payload, retrieval, 'summarization', session, generated);
 
   return res.json({
@@ -1068,6 +1205,10 @@ function handleChatbotConfigStatus(req, res) {
   return res.json({ status: getChatbotConfigStatus() });
 }
 
+function handleAdminChatbotTelemetry(req, res) {
+  return res.json(getChatbotTelemetrySnapshot());
+}
+
 app.post('/chatbot/session', handleChatbotSessionCreate);
 app.post('/api/chatbot/session', handleChatbotSessionCreate);
 
@@ -1079,6 +1220,8 @@ app.post('/api/chatbot/summarize', handleChatbotSummarize);
 
 app.get('/chatbot/config/status', handleChatbotConfigStatus);
 app.get('/api/chatbot/config/status', handleChatbotConfigStatus);
+app.get('/admin/chatbot/telemetry', requireAuthenticatedAdmin, handleAdminChatbotTelemetry);
+app.get('/api/admin/chatbot/telemetry', requireAuthenticatedAdmin, handleAdminChatbotTelemetry);
 
 function handleFirebaseSecretStatus(req, res) {
   const status = {};
