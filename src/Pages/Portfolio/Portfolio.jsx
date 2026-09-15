@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ChevronUp } from 'lucide-react';
 import Navbar from '../../Components/Navbar/Navbar.jsx';
 import Hero from '../Hero/Hero.jsx';
 import About from '../About/About.jsx';
@@ -15,6 +16,46 @@ import {
   SCROLL_INTENT_HOME_SECTION
 } from '../../utils/homeNavigation';
 import { scrollToSectionById } from '../../utils/scrollToSection';
+import './portfolio-template.css';
+
+function ScrollToTopButton() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const updateVisibility = () => {
+      setIsVisible(window.scrollY > 400);
+    };
+
+    updateVisibility();
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+    return () => window.removeEventListener('scroll', updateVisibility);
+  }, []);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  function scrollToTop() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    window.scrollTo({
+      top: 0,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth'
+    });
+  }
+
+  return (
+    <button
+      type="button"
+      className="scroll-to-top"
+      onClick={scrollToTop}
+      aria-label="Scroll to top"
+      title="Scroll to top"
+    >
+      <ChevronUp size={20} aria-hidden="true" />
+    </button>
+  );
+}
 
 export default function Portfolio() {
   const location = useLocation();
@@ -84,6 +125,7 @@ export default function Portfolio() {
         <Contact />
       </main>
       <Footer />
+      <ScrollToTopButton />
       <Chatbot />
     </>
   );

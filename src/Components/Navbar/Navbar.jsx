@@ -5,12 +5,11 @@ import { getActiveHomeSectionId } from '../../utils/scrollToSection';
 import './Navbar.css';
 
 const NAV_LINKS = [
-  { id: 'home',     label: 'Home' },
-  { id: 'about',    label: 'About' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'skills',   label: 'Skills' },
-  { id: 'blog',     label: 'Blog' },
-  { id: 'contact',  label: 'Contact' },
+  { id: 'about',        label: 'About me' },
+  { id: 'achievements', label: 'Achievements' },
+  { id: 'projects',     label: 'Projects' },
+  { id: 'skills',       label: 'Skills' },
+  { id: 'contact',      label: 'Contact me' },
 ];
 
 export default function Navbar() {
@@ -59,7 +58,7 @@ export default function Navbar() {
       <div className="container">
         <div className="nav-brand">
           <Link to="/" onClick={goToHomeTop} aria-label="Go to home page">
-            <img src="/media/dee_logo_white.png" alt="Dee Logo" className="nav-logo" />
+            <img src="/media/dee_logo_black.png" alt="Dee Logo" className="nav-logo" />
           </Link>
         </div>
 

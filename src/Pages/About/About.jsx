@@ -128,7 +128,7 @@ export default function About() {
   }
 
   return (
-    <section id="about" className="about">
+    <section id="about" className="about" data-scroll-anchor=".section-title">
       <div className="container">
         <h2 className="section-title">About Me</h2>
         <div className="about-content">
@@ -143,15 +143,15 @@ export default function About() {
             <div className="about-stats-wrapper">
               <div className="about-stats">
                 <div className="stat-item">
-                  <div className="stat-number">50+</div>
+                  <div className="stat-number">15+</div>
                   <div className="stat-label">Projects Completed</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">2+</div>
+                  <div className="stat-number">3+</div>
                   <div className="stat-label">Years Experience</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-number">100%</div>
+                  <div className="stat-number">97%</div>
                   <div className="stat-label">Client Satisfaction</div>
                 </div>
               </div>

@@ -1,8 +1,17 @@
-export const HOME_SECTION_IDS = ['home', 'about', 'projects', 'skills', 'contact'];
+export const HOME_SECTION_IDS = ['home', 'about', 'achievements', 'projects', 'skills', 'contact'];
 
 const HOME_SECTION_ID_SET = new Set(HOME_SECTION_IDS);
 const DEFAULT_FALLBACK_OFFSET = 72;
 const DEFAULT_EXTRA_OFFSET = 10;
+
+function getSectionAnchor(section) {
+  if (!section) {
+    return null;
+  }
+
+  const anchorSelector = section.dataset.scrollAnchor;
+  return anchorSelector ? section.querySelector(anchorSelector) || section : section;
+}
 
 export function normalizeHomeSectionId(sectionId) {
   if (typeof sectionId !== 'string') {
@@ -16,7 +25,25 @@ export function normalizeHomeSectionId(sectionId) {
 export function getNavbarClearance(options = {}) {
   const { fallbackOffset = DEFAULT_FALLBACK_OFFSET, extraOffset = DEFAULT_EXTRA_OFFSET } = options;
   const navbar = document.getElementById('navbar');
-  const navbarHeight = navbar ? Math.round(navbar.getBoundingClientRect().height) : fallbackOffset;
+  let navbarHeight = fallbackOffset;
+
+  if (navbar) {
+    const isAtPageTop = window.scrollY <= 1;
+    const isScrolled = navbar.classList.contains('scrolled');
+
+    // The compact navbar is the state users see immediately after a section
+    // jump. Measure that state when a click starts from the expanded top bar.
+    if (isAtPageTop && !isScrolled) {
+      const previousTransition = navbar.style.transition;
+      navbar.style.transition = 'none';
+      navbar.classList.add('scrolled');
+      navbarHeight = Math.round(navbar.getBoundingClientRect().height);
+      navbar.classList.remove('scrolled');
+      navbar.style.transition = previousTransition;
+    } else {
+      navbarHeight = Math.round(navbar.getBoundingClientRect().height);
+    }
+  }
 
   return navbarHeight + extraOffset;
 }
@@ -28,8 +55,11 @@ export function getActiveHomeSectionId(options = {}) {
   } = options;
 
   const sections = HOME_SECTION_IDS
-    .map((sectionId) => document.getElementById(sectionId))
-    .filter(Boolean);
+    .map((sectionId) => ({
+      id: sectionId,
+      element: getSectionAnchor(document.getElementById(sectionId))
+    }))
+    .filter(({ element }) => Boolean(element));
 
   if (!sections.length) {
     return fallbackId;
@@ -38,9 +68,11 @@ export function getActiveHomeSectionId(options = {}) {
   const referenceY = window.scrollY + getNavbarClearance(options) + referenceOffset;
   let current = fallbackId;
 
-  sections.forEach((section) => {
-    if (referenceY >= section.offsetTop) {
-      current = section.id;
+  sections.forEach(({ id, element }) => {
+    const sectionTop = window.scrollY + element.getBoundingClientRect().top;
+
+    if (referenceY >= sectionTop) {
+      current = id;
     }
   });
 
@@ -56,17 +88,8 @@ export function scrollToSectionById(sectionId, options = {}) {
     return false;
   }
 
-  let targetTop = window.scrollY + section.getBoundingClientRect().top - getNavbarClearance(options);
-
-  if (normalizedSectionId === 'contact') {
-    const footer = document.getElementById('footer');
-
-    if (footer) {
-      const footerBottom = window.scrollY + footer.getBoundingClientRect().bottom;
-      const footerAlignedTop = footerBottom - window.innerHeight;
-      targetTop = Math.max(targetTop, footerAlignedTop);
-    }
-  }
+  const anchor = getSectionAnchor(section);
+  let targetTop = window.scrollY + anchor.getBoundingClientRect().top - getNavbarClearance(options);
 
   const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
   const clampedTop = Math.min(Math.max(0, targetTop), maxScrollTop);

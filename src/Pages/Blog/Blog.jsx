@@ -135,10 +135,11 @@ export default function Blog() {
           <ul className={`nav-menu${menuOpen ? ' active' : ''}`} id="nav-menu">
             <li><button type="button" className="nav-link" onClick={() => goToHomeSection('home')}>Home</button></li>
             <li><button type="button" className="nav-link" onClick={() => goToHomeSection('about')}>About</button></li>
+            <li><button type="button" className="nav-link" onClick={() => goToHomeSection('achievements')}>Achievements</button></li>
             <li><button type="button" className="nav-link" onClick={() => goToHomeSection('projects')}>Projects</button></li>
             <li><button type="button" className="nav-link" onClick={() => goToHomeSection('skills')}>Skills</button></li>
-            <li><button type="button" className="nav-link active" onClick={goToBlogTop}>Blog</button></li>
             <li><button type="button" className="nav-link" onClick={() => goToHomeSection('contact')}>Contact</button></li>
+            <li><button type="button" className="nav-link active" onClick={goToBlogTop}>Blog</button></li>
           </ul>
 
           <div

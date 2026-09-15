@@ -62,13 +62,14 @@ export default function Projects() {
       ].filter(Boolean)
     : [];
 
-  const projectAccent = 'var(--primary-color)';
+  const projectAccent = 'var(--template-accent)';
   const currentProjectImage = resolveProjectImage(currentProject);
 
   return (
     <section
       id="projects"
       className="projects"
+      data-scroll-anchor=".projects-heading"
     >
       <div className="container">
         <div className="projects-heading">

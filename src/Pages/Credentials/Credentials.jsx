@@ -225,18 +225,18 @@ export default function Credentials() {
   }
 
   return (
-    <section id="credentials" className="creds-section">
+    <section id="achievements" className="creds-section" data-scroll-anchor=".creds-eyebrow">
       <div className="container">
         <div className="creds-header">
           <div className="creds-header-text">
             <span className="creds-eyebrow">Professional Growth</span>
             <h2 className="creds-title">
-              Credentials &amp; <span className="creds-title-muted">Expertise</span>
+              Achievements &amp; <span className="creds-title-muted">Expertise</span>
             </h2>
           </div>
 
           {/* Tab Toggle Pill */}
-          <div className="creds-toggle-pill" role="tablist" aria-label="Credential categories">
+          <div className="creds-toggle-pill" role="tablist" aria-label="Achievement categories">
             {['certificate', 'certification', 'badge'].map((tab) => (
               <button
                 key={tab}
@@ -256,12 +256,13 @@ export default function Credentials() {
           </div>
 
           {activeTab === 'badge' ? (
-            <div className="creds-toggle-pill" role="tablist" aria-label="Badge spaces">
+            <div className="creds-toggle-pill creds-source-toggle" role="tablist" aria-label="Badge spaces">
               {['github', 'other'].map((source) => (
                 <button
                   key={source}
                   type="button"
                   className={`creds-tab-btn${badgeSource === source ? ' is-active' : ''}`}
+                  aria-pressed={badgeSource === source}
                   onClick={() => setBadgeSource(source)}
                 >
                   {source === 'github' ? ICON.github : ICON.badge}
