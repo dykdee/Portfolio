@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "concurrently -k -n client,server -c blue,green \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "vite --port 8000",
+    "dev:client": "vite --port 9000",
     "dev:server": "node server.js",
     "build": "vite build && node scripts/copy-media-to-dist.mjs",
     "preview": "vite preview",

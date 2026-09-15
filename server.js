@@ -957,6 +957,13 @@ try {
 }
 
 app.use(cors());
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  next();
+});
+
 const jsonParser = express.json();
 app.use((req, res, next) => {
   if (typeof req.body !== 'undefined') {

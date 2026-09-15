@@ -98,7 +98,7 @@ export default function Skills() {
   }, []);
 
   return (
-    <section id="skills" className="skills" ref={sectionRef}>
+    <section id="skills" className="skills" ref={sectionRef} data-scroll-anchor=".section-title">
       <div className="container">
         <h2 className="section-title">Skills & Technologies</h2>
         <p className="skills-subtitle">

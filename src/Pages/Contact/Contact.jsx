@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './Contact.css';
 
 const CONTACT_LINKS = [
@@ -61,20 +61,74 @@ const CONTACT_LINKS = [
 ];
 
 export default function Contact() {
+  const contactRef = useRef(null);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [status, setStatus] = useState({ type: '', message: '' });
+  const [cursorAnimationActive, setCursorAnimationActive] = useState(false);
+
+  useEffect(() => {
+    const section = contactRef.current;
+
+    if (!section || !('IntersectionObserver' in window)) {
+      setCursorAnimationActive(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) {
+        return;
+      }
+
+      setCursorAnimationActive(true);
+      observer.disconnect();
+    }, { threshold: 0.28 });
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (status.message) {
+      setStatus({ type: '', message: '' });
+    }
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    alert(`Thanks, ${form.name}! Your message has been received. I'll get back to you soon.`);
-    setForm({ name: '', email: '', subject: '', message: '' });
+
+    const cleanedForm = Object.fromEntries(
+      Object.entries(form).map(([key, value]) => [key, value.trim()])
+    );
+
+    if (Object.values(cleanedForm).some((value) => !value)) {
+      setStatus({ type: 'error', message: 'Please complete every field before sending.' });
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(cleanedForm.email)) {
+      setStatus({ type: 'error', message: 'Please enter a valid email address.' });
+      return;
+    }
+
+    const mailto = new URL('mailto:me@dykdee.xyz');
+    mailto.searchParams.set('subject', cleanedForm.subject);
+    mailto.searchParams.set(
+      'body',
+      `Name: ${cleanedForm.name}\nEmail: ${cleanedForm.email}\n\n${cleanedForm.message}`
+    );
+
+    window.location.href = mailto.toString();
+    setStatus({ type: 'success', message: 'Your email app should open with this message ready to send.' });
   }
 
   return (
-    <section id="contact" className="contact">
+    <section
+      ref={contactRef}
+      id="contact"
+      className={`contact${cursorAnimationActive ? ' contact--cursor-active' : ''}`}
+      data-scroll-anchor=".section-title"
+    >
       <div className="container">
         <h2 className="section-title">Get In Touch</h2>
         <div className="contact-grid">
@@ -112,6 +166,7 @@ export default function Contact() {
                   placeholder="Your name"
                   required
                   autoComplete="name"
+                  maxLength={80}
                 />
               </div>
               <div className="form-group">
@@ -125,6 +180,7 @@ export default function Contact() {
                   placeholder="your@email.com"
                   required
                   autoComplete="email"
+                  maxLength={160}
                 />
               </div>
             </div>
@@ -138,6 +194,7 @@ export default function Contact() {
                 onChange={handleChange}
                 placeholder="What's this about?"
                 required
+                maxLength={140}
               />
             </div>
             <div className="form-group">
@@ -150,9 +207,27 @@ export default function Contact() {
                 placeholder="Your message..."
                 rows={5}
                 required
+                maxLength={2000}
               />
             </div>
-            <button type="submit" className="btn btn-primary">Send Message</button>
+            <div className="contact-form-footer">
+              <div className="contact-submit-wrap">
+                <button type="submit" className="btn btn-primary">Send Message</button>
+                <span className="contact-cursor" aria-hidden="true">
+                  <span className="contact-cursor-glow" />
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M3.2 2.1 21 10.2l-6.4 2.4 4.1 7.2-3.5 1.9-4.1-7.2-4.6 4.5z" />
+                  </svg>
+                </span>
+              </div>
+              <p
+                className={`contact-form-status${status.type ? ` is-${status.type}` : ''}`}
+                role={status.type === 'error' ? 'alert' : 'status'}
+                aria-live="polite"
+              >
+                {status.message}
+              </p>
+            </div>
           </form>
         </div>
       </div>

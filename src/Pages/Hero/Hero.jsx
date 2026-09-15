@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { scrollToSectionById } from '../../utils/scrollToSection';
+import { Github, Linkedin, Mail } from 'lucide-react';
 import './Hero.css';
 
 export default function Hero() {
@@ -171,10 +171,6 @@ export default function Hero() {
     };
   }, []);
 
-  function scrollTo(id) {
-    scrollToSectionById(id);
-  }
-
   return (
     <section id="home" className="hero">
       <video
@@ -194,24 +190,20 @@ export default function Hero() {
       <div className="container">
         <div className="hero-content">
           <h1 className="hero-title">
-            <span className="greeting">Hi, I'm</span>
+            <span className="greeting">Hi, I am</span>
             <span className="name">Agoma Divine E.</span>
             <span className="role">AI Product &amp; Systems Engineer</span>
           </h1>
-          <p className="hero-description">
-            Stop building AI demos. Start deploying intelligent systems with Dee.< br />
-            Building intelligent systems that remove repetitive workflows, improve decision-making, and make products smarter.< br />
-            From machine learning integration to scalable system design, I turn AI into usable infrastructure.
-          </p>
-          <div className="hero-buttons">
-            <button className="btn btn-primary" onClick={() => scrollTo('projects')}>View My Work</button>
-            <button className="btn btn-secondary" onClick={() => scrollTo('contact')}>Get In Touch</button>
+          <div className="hero-socials" aria-label="Social links">
+            <a href="https://github.com/dykdee" target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={17} /></a>
+            <a href="https://linkedin.com/in/dykdee" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a>
+            <a href="mailto:me@dykdee.xyz" aria-label="Email"><Mail size={17} /></a>
           </div>
         </div>
 
         <div className="hero-image">
           <div className="hero-profile-container">
-            <img src="/media/dee.jpeg" alt="Profile Picture" className="hero-profile-pic" />
+            <img src="/media/dee-cutout.png" alt="Profile Picture" className="hero-profile-pic" />
           </div>
         </div>
       </div>
